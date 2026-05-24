@@ -52,7 +52,7 @@ window.addEventListener("online", updateNetworkStatus);
 window.addEventListener("offline", updateNetworkStatus);
 
 const initTheme = () => {
-  const savedTheme = localStorage.getItem("theme") || "dark";
+  const savedTheme = localStorage.getItem("theme") || "light";
   const toggleIcon = document.getElementById("theme-toggle-icon");
   if (savedTheme === "light") {
     document.body.classList.add("light-theme");
