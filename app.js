@@ -1,5 +1,6 @@
 /*
    Block Inventory Management System - Core Application Engine (Compat Mode)
+   Bozel Bims Envanter Takip ve Yönetim Sistemi
    Enforces a frictionless View-Only by default flow. 
    Unlocks full administrative entry/edits via a simple password prompt.
 */
@@ -24,9 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
 const checkSession = () => {
   const isAdminLoggedIn = sessionStorage.getItem("admin_logged_in");
   if (isAdminLoggedIn === "true") {
-    currentUser = { role: "admin", name: "المدير العام" };
+    currentUser = { role: "admin", name: "Genel Yönetici" };
   } else {
-    currentUser = { role: "viewer", name: "المشاهد المتابع" };
+    currentUser = { role: "viewer", name: "Takipçi İzleyici" };
   }
   onLoginSuccess();
 };
@@ -38,18 +39,18 @@ const onLoginSuccess = async () => {
   roleBadge.className = "badge-role"; // reset classes
   
   if (currentUser.role === "admin") {
-    roleBadge.textContent = "وضع الإدارة والعمليات";
+    roleBadge.textContent = "Yönetici Modu";
     roleBadge.classList.add("badge-admin");
     
-    loginBtn.innerHTML = '<i class="fas fa-lock"></i> خروج المدير';
+    loginBtn.innerHTML = '<i class="fas fa-lock"></i> Yönetici Çıkışı';
     loginBtn.className = "btn btn-secondary";
     loginBtn.style.borderColor = "hsla(0, 84%, 60%, 0.3)";
     loginBtn.style.color = "var(--danger)";
   } else {
-    roleBadge.textContent = "وضع المشاهدة";
+    roleBadge.textContent = "İzleyici Modu";
     roleBadge.classList.add("badge-owner");
     
-    loginBtn.innerHTML = '<i class="fas fa-key"></i> دخول المدير';
+    loginBtn.innerHTML = '<i class="fas fa-key"></i> Yönetici Girişi';
     loginBtn.className = "btn btn-primary";
     loginBtn.style.borderColor = "";
     loginBtn.style.color = "";
@@ -146,7 +147,7 @@ const refreshApplicationData = async () => {
       lastUpdateTs = txs[0].date;
     }
     
-    let lastDataUpdateStr = "لا يوجد حركات مسجلة";
+    let lastDataUpdateStr = "Kayıtlı işlem bulunamadı";
     if (lastUpdateTs) {
       const dateObj = new Date(lastUpdateTs);
       const dDay = String(dateObj.getDate()).padStart(2, "0");
@@ -163,7 +164,7 @@ const refreshApplicationData = async () => {
       lastDataUpdateEl.textContent = lastDataUpdateStr;
     }
   } catch (error) {
-    showAlert("حدث خطأ أثناء تحميل البيانات: " + error.message, "error");
+    showAlert("Veriler yüklenirken hata oluştu: " + error.message, "error");
   }
 };
 
@@ -178,22 +179,22 @@ const populateBlockSelects = () => {
 
   selects.forEach(sel => {
     if (!sel) return;
-    sel.innerHTML = '<option value="">اختر النوع...</option>';
+    sel.innerHTML = '<option value="">Seçiniz...</option>';
     blockTypesList.forEach(b => {
       const opt = document.createElement("option");
       opt.value = b.id;
-      opt.textContent = `${b.name} - ${b.blocks_per_pallet || 120} حبة/باليت`;
+      opt.textContent = `${b.name} - ${b.blocks_per_pallet || 120} adet/palet`;
       sel.appendChild(opt);
     });
   });
 
   const firstDispSelect = document.querySelector(".disp-item-select");
   if (firstDispSelect) {
-    firstDispSelect.innerHTML = '<option value="">اختر النوع...</option>';
+    firstDispSelect.innerHTML = '<option value="">Seçiniz...</option>';
     blockTypesList.forEach(b => {
       const opt = document.createElement("option");
       opt.value = b.id;
-      opt.textContent = `${b.name} - ${b.blocks_per_pallet || 120} حبة/باليت`;
+      opt.textContent = `${b.name} - ${b.blocks_per_pallet || 120} adet/palet`;
       firstDispSelect.appendChild(opt);
     });
   }
@@ -207,10 +208,10 @@ const renderStatsAndDashboard = async () => {
 
   if (viewId === "owner-dashboard") {
     const stats = await window.dbOps.getStats();
-    document.getElementById("stat-total-stock").textContent = stats.totalStock.toLocaleString("en-US");
-    document.getElementById("stat-month-production").textContent = stats.monthProduction.toLocaleString("en-US");
-    document.getElementById("stat-month-dispatch").textContent = stats.monthDispatch.toLocaleString("en-US");
-    document.getElementById("stat-total-repair").textContent = stats.totalUnderRepair.toLocaleString("en-US");
+    document.getElementById("stat-total-stock").textContent = stats.totalStock.toLocaleString("tr-TR");
+    document.getElementById("stat-month-production").textContent = stats.monthProduction.toLocaleString("tr-TR");
+    document.getElementById("stat-month-dispatch").textContent = stats.monthDispatch.toLocaleString("tr-TR");
+    document.getElementById("stat-total-repair").textContent = stats.totalUnderRepair.toLocaleString("tr-TR");
 
     renderInventoryTable();
     renderDashboardLogs();
@@ -237,7 +238,7 @@ const renderInventoryTable = () => {
   const filtered = blockTypesList.filter(b => b.name.toLowerCase().includes(searchQuery));
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">لا توجد تطابقات للبحث.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Arama sonucuyla eşleşen blok tipi bulunamadı.</td></tr>`;
     return;
   }
 
@@ -253,24 +254,24 @@ const renderInventoryTable = () => {
     const currentPieces = current * perPallet;
 
     let stockClass = "stock-high";
-    let stockStatus = "متوفر بكثرة";
+    let stockStatus = "Bolluk Seviyesinde";
     let badgeColor = "hsl(142, 76%, 45%)"; // Vibrant green
 
     if (current <= min) {
       stockClass = "stock-low";
-      stockStatus = "منخفض جداً (خطر)";
+      stockStatus = "Kritik Stok (Tehlike)";
       badgeColor = "hsl(0, 84%, 60%)"; // Danger Red
     } else if (current > min && current <= min + (max - min) * 0.5) {
       stockClass = "stock-medium";
-      stockStatus = "قارب على الانخفاض";
+      stockStatus = "Kritik Sınıra Yakın";
       badgeColor = "hsl(45, 100%, 51%)"; // Warning Gold/Orange
     } else if (current > min + (max - min) * 0.5 && current < max) {
       stockClass = "stock-high";
-      stockStatus = "متوفر بشكل جيد";
+      stockStatus = "Güvenli Seviyede";
       badgeColor = "hsl(88, 76%, 45%)"; // Light Green
     } else {
       stockClass = "stock-high";
-      stockStatus = "متوفر بكثرة";
+      stockStatus = "Bolluk Seviyesinde";
       badgeColor = "hsl(142, 76%, 45%)"; // Vibrant Green
     }
 
@@ -278,16 +279,16 @@ const renderInventoryTable = () => {
     tr.innerHTML = `
       <td style="font-weight: 700; color: var(--text-primary);">${b.name}</td>
       <td style="color: var(--text-secondary); font-size: 0.85rem;">
-        <span style="font-weight: bold; color: var(--text-primary);">${b.initial_stock.toLocaleString("en-US")}</span> باليت<br>
-        <span style="color: var(--text-muted); font-size: 0.75rem;">(${initPieces.toLocaleString("en-US")} حبة)</span>
+        <span style="font-weight: bold; color: var(--text-primary);">${b.initial_stock.toLocaleString("tr-TR")}</span> palet<br>
+        <span style="color: var(--text-muted); font-size: 0.75rem;">(${initPieces.toLocaleString("tr-TR")} adet)</span>
       </td>
       <td style="color: var(--warning); font-size: 0.85rem;">
-        <span style="font-weight: bold;">${b.under_repair_stock.toLocaleString("en-US")}</span> باليت<br>
-        <span style="color: var(--text-muted); font-size: 0.75rem;">(${repairPieces.toLocaleString("en-US")} حبة)</span>
+        <span style="font-weight: bold;">${b.under_repair_stock.toLocaleString("tr-TR")}</span> palet<br>
+        <span style="color: var(--text-muted); font-size: 0.75rem;">(${repairPieces.toLocaleString("tr-TR")} adet)</span>
       </td>
       <td style="font-size: 0.9rem; color: ${current <= min ? "var(--danger)" : "var(--text-primary)"};">
-        <span style="font-weight: 800; font-size: 1.05rem;">${current.toLocaleString("en-US")}</span> باليت<br>
-        <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">(${currentPieces.toLocaleString("en-US")} حبة)</span>
+        <span style="font-weight: 800; font-size: 1.05rem;">${current.toLocaleString("tr-TR")}</span> palet<br>
+        <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">(${currentPieces.toLocaleString("tr-TR")} adet)</span>
       </td>
       <td>
         <span class="stock-indicator ${stockClass}" style="background-color: ${badgeColor};"></span>
@@ -305,7 +306,7 @@ const renderDashboardLogs = async () => {
   const txs = await window.dbOps.getTransactions();
 
   if (txs.length === 0) {
-    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 2rem 0;">سجل العمليات فارغ تماماً.</div>`;
+    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 2rem 0;">İşlem geçmişi tamamen boş.</div>`;
     return;
   }
 
@@ -318,36 +319,36 @@ const renderDashboardLogs = async () => {
     if (t.type === "production") {
       qtySign = "+";
       qtyClass = "qty-plus";
-      actionTitle = `إنتاج: ${t.block_name}`;
+      actionTitle = `Üretim Girişi: ${t.block_name}`;
       itemClass = "prod";
     } else if (t.type === "dispatch") {
       qtySign = "-";
       qtyClass = "qty-minus";
-      actionTitle = `تحميل: ${t.block_name}`;
+      actionTitle = `Sevkiyat Çıkışı: ${t.block_name}`;
       itemClass = "disp";
     } else if (t.type === "waste") {
       qtySign = "-";
       qtyClass = "qty-minus";
-      actionTitle = `هدر/كسر كلي: ${t.block_name}`;
+      actionTitle = `Kullanılamaz Heder: ${t.block_name}`;
       itemClass = "waste";
     } else if (t.type === "to_repair") {
       qtySign = "-";
       qtyClass = "qty-warning";
-      actionTitle = `إحالة للصيانة: ${t.block_name}`;
+      actionTitle = `Onarıma Sevk: ${t.block_name}`;
       itemClass = "to_repair";
     } else if (t.type === "repaired") {
       qtySign = "+";
       qtyClass = "qty-accent";
-      actionTitle = `تم إصلاحه وإعادته: ${t.block_name}`;
+      actionTitle = `Stoğa Geri Kazanım: ${t.block_name}`;
       itemClass = "repaired";
     }
 
     const dateObj = new Date(t.date);
-    const timeStr = dateObj.toLocaleDateString("en-US", {
+    const timeStr = dateObj.toLocaleDateString("tr-TR", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric"
-    }) + " " + dateObj.toLocaleTimeString("en-US", {
+    }) + " " + dateObj.toLocaleTimeString("tr-TR", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false
@@ -374,17 +375,17 @@ const renderDashboardLogs = async () => {
           </span>
         </div>
         <div style="text-align: left; display: flex; flex-direction: column;">
-          <span class="log-quantity ${qtyClass}">${qtySign}${t.quantity.toLocaleString("en-US")} باليت</span>
-          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; margin-top: 0.1rem;">(${pieces.toLocaleString("en-US")} حبة)</span>
+          <span class="log-quantity ${qtyClass}">${qtySign}${t.quantity.toLocaleString("tr-TR")} palet</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; margin-top: 0.1rem;">(${pieces.toLocaleString("tr-TR")} adet)</span>
         </div>
       </div>
       ${isEditable ? `
       <div class="log-actions" style="display: flex; gap: 0.5rem; margin-top: 0.6rem; justify-content: flex-end; border-top: 1px dashed hsla(222,25%,35%,0.3); padding-top: 0.5rem;">
         <button class="btn btn-secondary btn-sm btn-edit-tx" data-id="${t.id}" style="width: auto; padding: 0.25rem 0.6rem; font-size: 0.75rem; color: var(--accent-blue); border-color: hsla(210,100%,56%,0.2);">
-          <i class="fas fa-edit"></i> تعديل
+          <i class="fas fa-edit"></i> Düzenle
         </button>
         <button class="btn btn-secondary btn-sm btn-delete-tx" data-id="${t.id}" style="width: auto; padding: 0.25rem 0.6rem; font-size: 0.75rem; color: var(--danger); border-color: hsla(0,84%,60%,0.2);">
-          <i class="fas fa-trash-alt"></i> حذف
+          <i class="fas fa-trash-alt"></i> Sil
         </button>
       </div>
       ` : ""}
@@ -403,11 +404,11 @@ const renderPortalLogs = async (portalId) => {
 
   const txs = await window.dbOps.getTransactions();
   const todayStart = new Date().setHours(0,0,0,0);
-  // In single-auth flow, all operations are entered by 'المدير العام'
-  const myTxs = txs.filter(t => t.date >= todayStart && t.created_by === "المدير العام");
+  // In single-auth flow, all operations are entered by 'Genel Yönetici'
+  const myTxs = txs.filter(t => t.date >= todayStart && t.created_by === "Genel Yönetici");
 
   if (myTxs.length === 0) {
-    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 2rem 0;">لم يتم تسجيل أي حركة اليوم بعد.</div>`;
+    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 2rem 0;">Bugün henüz bir işlem kaydetmediniz.</div>`;
     return;
   }
 
@@ -417,28 +418,28 @@ const renderPortalLogs = async (portalId) => {
     let sign = "";
 
     if (t.type === "production") {
-      actionTitle = "تسجيل إنتاج";
+      actionTitle = "Üretim Girişi";
       badgeClass = "badge-prod";
       sign = "+";
     } else if (t.type === "dispatch") {
-      actionTitle = "تحميل صادرات";
+      actionTitle = "Sevkiyat Çıkışı";
       badgeClass = "badge-disp";
       sign = "-";
     } else if (t.type === "waste") {
-      actionTitle = "هدر/كسر كلي";
+      actionTitle = "Kullanılamaz Fire";
       badgeClass = "badge-admin";
       sign = "-";
     } else if (t.type === "to_repair") {
-      actionTitle = "كسر تحت الإصلاح";
+      actionTitle = "Onarıma Sevk";
       badgeClass = "badge-disp";
       sign = "-";
     } else if (t.type === "repaired") {
-      actionTitle = "إرجاع مصلح للمخزون";
+      actionTitle = "Stoğa Kazanım";
       badgeClass = "badge-owner";
       sign = "+";
     }
 
-    const timeStr = new Date(t.date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+    const timeStr = new Date(t.date).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit", hour12: false });
 
     const block = blockTypesList.find(b => b.id === t.block_type_id);
     const perPallet = block ? block.blocks_per_pallet : 120;
@@ -459,16 +460,16 @@ const renderPortalLogs = async (portalId) => {
           </span>
         </div>
         <div style="text-align: left; display: flex; flex-direction: column;">
-          <span class="log-quantity" style="color: var(--primary); font-weight: bold;">${sign}${t.quantity.toLocaleString("en-US")} باليت</span>
-          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">(${pieces.toLocaleString("en-US")} حبة)</span>
+          <span class="log-quantity" style="color: var(--primary); font-weight: bold;">${sign}${t.quantity.toLocaleString("tr-TR")} palet</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">(${pieces.toLocaleString("tr-TR")} adet)</span>
         </div>
       </div>
       <div class="log-actions" style="display: flex; gap: 0.5rem; margin-top: 0.6rem; justify-content: flex-end; border-top: 1px dashed hsla(222,25%,35%,0.3); padding-top: 0.5rem;">
         <button class="btn btn-secondary btn-sm btn-edit-tx" data-id="${t.id}" style="width: auto; padding: 0.25rem 0.6rem; font-size: 0.75rem; color: var(--accent-blue); border-color: hsla(210,100%,56%,0.2);">
-          <i class="fas fa-edit"></i> تعديل
+          <i class="fas fa-edit"></i> Düzenle
         </button>
         <button class="btn btn-secondary btn-sm btn-delete-tx" data-id="${t.id}" style="width: auto; padding: 0.25rem 0.6rem; font-size: 0.75rem; color: var(--danger); border-color: hsla(0,84%,60%,0.2);">
-          <i class="fas fa-trash-alt"></i> حذف
+          <i class="fas fa-trash-alt"></i> Sil
         </button>
       </div>
     `;
@@ -482,22 +483,30 @@ const renderPortalLogs = async (portalId) => {
 const bindLogActionsEvents = (txs) => {
   // 1. DELETE ACTION
   document.querySelectorAll(".btn-delete-tx").forEach(btn => {
+    btn.replaceWith(btn.cloneNode(true)); // remove duplicate events
+  });
+  
+  document.querySelectorAll(".btn-delete-tx").forEach(btn => {
     btn.addEventListener("click", async (e) => {
       e.stopPropagation();
       const txId = btn.getAttribute("data-id");
-      if (confirm("⚠️ هل أنت متأكد تماماً من حذف هذه الحركة؟ سيتم عكس تأثيرها الحسابي في أرصدة المخازن فوراً!")) {
+      if (confirm("⚠️ Bu işlemi silmek istediğinizden tamamen emin misiniz? Stok miktarları anlık olarak geri hesaplanacaktır!")) {
         try {
           await window.dbOps.deleteTransaction(txId);
-          showAlert("تم حذف الحركة وإرجاع المخازن بنجاح!", "success");
+          showAlert("İşlem silindi ve stok miktarları başarıyla geri güncellendi!", "success");
           await refreshApplicationData();
         } catch (error) {
-          showAlert("خطأ أثناء الحذف: " + error.message, "error");
+          showAlert("Silme işlemi esnasında hata: " + error.message, "error");
         }
       }
     });
   });
 
   // 2. EDIT ACTION (Modal trigger)
+  document.querySelectorAll(".btn-edit-tx").forEach(btn => {
+    btn.replaceWith(btn.cloneNode(true)); // remove duplicate events
+  });
+
   document.querySelectorAll(".btn-edit-tx").forEach(btn => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -507,14 +516,14 @@ const bindLogActionsEvents = (txs) => {
 
       document.getElementById("edit-tx-id").value = tx.id;
       
-      let typeLabel = "عملية";
-      if (tx.type === "production") typeLabel = "إنتاج صالح";
-      else if (tx.type === "dispatch") typeLabel = "تحميل صادرات";
-      else if (tx.type === "waste") typeLabel = "هدر/تالف كلي";
-      else if (tx.type === "to_repair") typeLabel = "كسر تحت الإصلاح";
-      else if (tx.type === "repaired") typeLabel = "بلوك مصلح للبيع";
+      let typeLabel = "İşlem";
+      if (tx.type === "production") typeLabel = "Üretim Girişi";
+      else if (tx.type === "dispatch") typeLabel = "Sevkiyat Çıkışı";
+      else if (tx.type === "waste") typeLabel = "Kullanılamaz Fire";
+      else if (tx.type === "to_repair") typeLabel = "Onarıma Sevk";
+      else if (tx.type === "repaired") typeLabel = "Stoğa Kazanım";
 
-      document.getElementById("edit-tx-label").textContent = `${typeLabel} | المدخل: ${tx.created_by}`;
+      document.getElementById("edit-tx-label").textContent = `${typeLabel} | Sorumlu: ${tx.created_by}`;
       document.getElementById("edit-tx-block-type").value = tx.block_type_id;
       document.getElementById("edit-tx-quantity").value = tx.quantity;
       document.getElementById("edit-tx-notes").value = tx.notes || "";
@@ -529,14 +538,14 @@ const renderAdminBlockList = () => {
   container.innerHTML = "";
 
   if (blockTypesList.length === 0) {
-    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 2rem 0;">لا يوجد أي أنواع بلوك معرّفة حالياً.</div>`;
+    container.innerHTML = `<div style="text-align: center; color: var(--text-muted);">Sistemde tanımlı blok tipi bulunamadı.</div>`;
     return;
   }
 
   blockTypesList.forEach(b => {
     const item = document.createElement("div");
     item.className = "log-item";
-    item.style.borderRightColor = "var(--danger)";
+    item.style.borderLeftColor = "var(--danger)";
     item.style.flexDirection = "column";
     item.style.alignItems = "stretch";
     item.innerHTML = `
@@ -544,19 +553,19 @@ const renderAdminBlockList = () => {
         <div class="log-details">
           <span class="log-title" style="font-weight: bold; color: var(--text-primary);">${b.name}</span>
           <span class="log-meta">
-            سعة الباليت: <span style="color: var(--accent-blue); font-weight: bold;">${b.blocks_per_pallet || 120} حبة</span> • 
-            رصيد أول المدة: ${b.initial_stock.toLocaleString("en-US")} باليت • 
-            حد الخطر: <span style="color: var(--danger); font-weight: bold;">${(b.min_threshold || 10).toLocaleString("en-US")} باليت</span> • 
-            حد الوفرة: <span style="color: var(--success); font-weight: bold;">${(b.max_threshold || 100).toLocaleString("en-US")} باليت</span>
+            Palet Kapasitesi: <span style="color: var(--accent-blue); font-weight: bold;">${b.blocks_per_pallet || 120} adet</span> • 
+            Başlangıç Stoğu: ${b.initial_stock.toLocaleString("tr-TR")} palet • 
+            Kritik Sınır: <span style="color: var(--danger); font-weight: bold;">${(b.min_threshold || 10).toLocaleString("tr-TR")} palet</span> • 
+            Bolluk Sınırı: <span style="color: var(--success); font-weight: bold;">${(b.max_threshold || 100).toLocaleString("tr-TR")} palet</span>
           </span>
         </div>
       </div>
       <div style="display: flex; gap: 0.5rem; margin-top: 0.6rem; justify-content: flex-end; border-top: 1px dashed hsla(222,25%,35%,0.3); padding-top: 0.5rem;">
         <button class="btn btn-secondary btn-sm edit-block-btn" data-id="${b.id}" style="width: auto; padding: 0.25rem 0.6rem; font-size: 0.75rem; color: var(--accent-blue); border-color: hsla(210,100%,56%,0.2);">
-          <i class="fas fa-edit"></i> تعديل المواصفات
+          <i class="fas fa-edit"></i> Özellikleri Düzenle
         </button>
         <button class="btn btn-secondary btn-sm delete-block-btn" data-id="${b.id}" style="width: auto; padding: 0.25rem 0.6rem; font-size: 0.75rem; color: var(--danger); border-color: hsla(0, 84%, 60%, 0.2);">
-          <i class="fas fa-trash-alt"></i> حذف
+          <i class="fas fa-trash-alt"></i> Sil
         </button>
       </div>
     `;
@@ -585,9 +594,9 @@ const renderAdminBlockList = () => {
     btn.addEventListener("click", async (e) => {
       const id = btn.getAttribute("data-id");
       const block = blockTypesList.find(b => b.id === id);
-      if (confirm(`⚠️ هل أنت متأكد تماماً من حذف نوع البلوك "${block.name}"؟ سيتم مسح بيانات المخزون الخاص به بالكامل!`)) {
+      if (confirm(`⚠️ "${block.name}" blok tipini tamamen silmek istediğinizden emin misiniz? Bu tipe ait tüm envanter verileri silinecektir!`)) {
         await window.dbOps.deleteBlockType(id);
-        showAlert("تم حذف نوع البلوك بنجاح!", "success");
+        showAlert("Blok tipi başarıyla silindi!", "success");
         await refreshApplicationData();
       }
     });
@@ -607,7 +616,7 @@ const renderDashboardCharts = async () => {
       labels: data.weeklyComparison.labels,
       datasets: [
         {
-          label: "إجمالي الإنتاج اليومي",
+          label: "Günlük Toplam Üretim",
           data: data.weeklyComparison.production,
           borderColor: "hsl(142, 76%, 45%)",
           backgroundColor: "hsla(142, 76%, 45%, 0.1)",
@@ -616,10 +625,10 @@ const renderDashboardCharts = async () => {
           fill: true
         },
         {
-          label: "إجمالي فياش التحميل الصادرة",
+          label: "Günlük Toplam Sevkiyat",
           data: data.weeklyComparison.dispatch,
-          borderColor: "hsl(20, 95%, 55%)",
-          backgroundColor: "hsla(20, 95%, 55%, 0.1)",
+          borderColor: "hsl(358, 90%, 52%)",
+          backgroundColor: "hsla(358, 90%, 52%, 0.1)",
           borderWidth: 3,
           tension: 0.35,
           fill: true
@@ -642,7 +651,16 @@ const renderDashboardCharts = async () => {
   const ctxDist = document.getElementById("stockDistributionChart").getContext("2d");
   distributionChartInstance = new Chart(ctxDist, {
     type: "doughnut",
-    data: data.distribution,
+    data: {
+      labels: data.distribution.labels,
+      datasets: [{
+        label: "Palet Miktarı",
+        data: data.distribution.datasets[0].data,
+        backgroundColor: data.distribution.datasets[0].backgroundColor,
+        borderColor: data.distribution.datasets[0].borderColor,
+        borderWidth: data.distribution.datasets[0].borderWidth
+      }]
+    },
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -676,50 +694,6 @@ const switchTab = (targetViewId) => {
   renderStatsAndDashboard();
 };
 
-// --- AUTOMATIC & MANUAL BACKGROUND SYNC SYSTEM ---
-const initAutoSync = () => {
-  // 1. Manual Sync Button Click Listener
-  const btnSync = document.getElementById("btn-manual-sync");
-  if (btnSync) {
-    btnSync.addEventListener("click", async () => {
-      const syncIcon = document.getElementById("sync-icon");
-      if (syncIcon) syncIcon.classList.add("fa-spin");
-      
-      try {
-        await refreshApplicationData();
-        showAlert("تمت مزامنة البيانات وتحديث المخازن بنجاح!", "success");
-      } catch (err) {
-        showAlert("خطأ أثناء المزامنة: " + err.message, "error");
-      } finally {
-        if (syncIcon) {
-          // Keep spinning for 600ms for visual satisfaction
-          setTimeout(() => {
-            syncIcon.classList.remove("fa-spin");
-          }, 600);
-        }
-      }
-    });
-  }
-
-  // 2. Automatic periodic background sync every 60 seconds
-  setInterval(async () => {
-    const syncIcon = document.getElementById("sync-icon");
-    if (syncIcon) syncIcon.classList.add("fa-spin");
-    
-    try {
-      await refreshApplicationData();
-    } catch (err) {
-      console.warn("Background auto-sync failed:", err.message);
-    } finally {
-      if (syncIcon) {
-        setTimeout(() => {
-          syncIcon.classList.remove("fa-spin");
-        }, 600);
-      }
-    }
-  }, 60000);
-};
-
 // --- EVENTS BINDINGS ---
 const setupEventListeners = () => {
   
@@ -731,9 +705,9 @@ const setupEventListeners = () => {
       document.getElementById("admin-password").focus();
     } else {
       // Log out of admin, go back to viewer
-      currentUser = { role: "viewer", name: "المشاهد المتابع" };
+      currentUser = { role: "viewer", name: "Takipçi İzleyici" };
       sessionStorage.removeItem("admin_logged_in");
-      showAlert("تم قفل لوحة التحكم، والعودة لوضع المشاهدة فقط.", "info");
+      showAlert("Yönetici kontrol paneli kilitlendi ve İzleyici Moduna dönüldü.", "info");
       onLoginSuccess();
     }
   });
@@ -755,16 +729,16 @@ const setupEventListeners = () => {
     const pass = document.getElementById("admin-password").value;
 
     if (pass === ADMIN_PASSWORD) {
-      currentUser = { role: "admin", name: "المدير العام" };
+      currentUser = { role: "admin", name: "Genel Yönetici" };
       sessionStorage.setItem("admin_logged_in", "true");
       
       loginModal.classList.remove("active");
       document.getElementById("form-admin-login").reset();
       
-      showAlert("تم تفعيل صلاحيات الإدارة والعمليات الكاملة بنجاح!", "success");
+      showAlert("Yönetici yetkileri başarıyla aktif edildi!", "success");
       onLoginSuccess();
     } else {
-      showAlert("رمز المرور السري غير صحيح! يرجى إعادة المحاولة.", "error");
+      showAlert("Yönetici şifresi hatalı! Lütfen tekrar deneyiniz.", "error");
     }
   });
 
@@ -791,11 +765,11 @@ const setupEventListeners = () => {
     row.innerHTML = `
       <div class="form-group" style="margin-bottom: 0; width: 100%;">
         <select class="form-input disp-item-select" required>
-          <option value="">اختر النوع...</option>
+          <option value="">Seçiniz...</option>
         </select>
       </div>
       <div class="form-group" style="margin-bottom: 0; width: 100%; display: flex; gap: 0.5rem; align-items: center;">
-        <input class="form-input disp-item-qty" type="number" min="1" placeholder="مثلاً: 500" required>
+        <input class="form-input disp-item-qty" type="number" min="1" placeholder="Örn: 15" required>
         <button type="button" class="btn btn-danger btn-remove-row" style="width: auto; padding: 0.75rem; border-radius: var(--border-radius-sm); margin-bottom: 0;">
           <i class="fas fa-trash-alt"></i>
         </button>
@@ -806,7 +780,7 @@ const setupEventListeners = () => {
     blockTypesList.forEach(b => {
       const opt = document.createElement("option");
       opt.value = b.id;
-      opt.textContent = `${b.name} (${b.dimensions.length}×${b.dimensions.width}×${b.dimensions.height} سم)`;
+      opt.textContent = `${b.name} - ${b.blocks_per_pallet || 120} adet/palet`;
       selectEl.appendChild(opt);
     });
 
@@ -845,7 +819,7 @@ const setupEventListeners = () => {
     });
 
     if (itemsToLoad.length === 0) {
-      showAlert("يرجى إضافة نوع واحد من البلوك على الأقل للفيش!", "error");
+      showAlert("Fişe en az bir adet blok tipi eklemelisiniz!", "error");
       return;
     }
 
@@ -857,23 +831,23 @@ const setupEventListeners = () => {
 
       for (const blockId in stockAggregate) {
         const block = blockTypesList.find(b => b.id === blockId);
-        if (!block) throw new Error("نوع البلوك غير معرّف!");
+        if (!block) throw new Error("Blok tipi tanımlı değil!");
         if (block.current_stock < stockAggregate[blockId]) {
-          throw new Error(`رصيد المخزون لا يكفي لـ "${block.name}"! المتاح بالساحة: ${block.current_stock} - المطلوب: ${stockAggregate[blockId]}.`);
+          throw new Error(`"${block.name}" için yetersiz stok! Mevcut Stok: ${block.current_stock} palet - İstenen: ${stockAggregate[blockId]} palet.`);
         }
       }
 
-      const fullNotesPrefix = `العميل: ${customer} | فيش رقم ${ticketNo}`;
+      const fullNotesPrefix = `Müşteri: ${customer} | Fiş No ${ticketNo}`;
       for (const item of itemsToLoad) {
         const itemNotes = `${fullNotesPrefix} ${notes ? `| ${notes}` : ""}`;
         await window.dbOps.addTransaction(item.blockId, "dispatch", item.qty, itemNotes, currentUser.name);
       }
 
-      showAlert(`تم تسجيل فيش التحميل رقم ${ticketNo} بنجاح وخصم الأرصدة!`, "success");
+      showAlert(`Sevkiyat fişi No ${ticketNo} başarıyla kaydedildi ve stoklar düşüldü!`, "success");
       resetDispatchForm();
       await refreshApplicationData();
     } catch (err) {
-      showAlert("خطأ أثناء تسجيل التحميل: " + err.message, "error");
+      showAlert("Yükleme kaydı başarısız: " + err.message, "error");
     }
   });
 
@@ -881,15 +855,15 @@ const setupEventListeners = () => {
   // TRANSACTION EDIT MODAL SUBMIT
   // ==========================================
   
-  const editModal = document.getElementById("edit-tx-modal");
+  const editTxModal = document.getElementById("edit-tx-modal");
   
   document.getElementById("btn-close-edit-modal").addEventListener("click", () => {
-    editModal.classList.remove("active");
+    editTxModal.classList.remove("active");
   });
   
-  editModal.addEventListener("click", (e) => {
-    if (e.target === editModal) {
-      editModal.classList.remove("active");
+  editTxModal.addEventListener("click", (e) => {
+    if (e.target === editTxModal) {
+      editTxModal.classList.remove("active");
     }
   });
 
@@ -902,11 +876,11 @@ const setupEventListeners = () => {
 
     try {
       await window.dbOps.editTransaction(txId, blockTypeId, qty, notes);
-      showAlert("تم تعديل العملية وإعادة احتساب الأرصدة بنجاح!", "success");
-      editModal.classList.remove("active");
+      showAlert("İşlem başarıyla güncellendi ve stoklar yeniden hesaplandı!", "success");
+      editTxModal.classList.remove("active");
       await refreshApplicationData();
     } catch (err) {
-      showAlert("فشل التعديل: " + err.message, "error");
+      showAlert("Güncelleme başarısız: " + err.message, "error");
     }
   });
 
@@ -922,17 +896,17 @@ const setupEventListeners = () => {
     const notes = document.getElementById("prod-notes").value;
 
     if (!typeId) {
-      showAlert("يرجى اختيار نوع البلوك!", "error");
+      showAlert("Lütfen blok tipini seçiniz!", "error");
       return;
     }
 
     try {
       await window.dbOps.addTransaction(typeId, "production", qty, notes, currentUser.name);
-      showAlert("تم حفظ عملية الإنتاج بنجاح وزيادة المخزون الفعلي!", "success");
+      showAlert("Üretim işlemi başarıyla kaydedildi ve stok artırıldı!", "success");
       document.getElementById("form-add-production").reset();
       await refreshApplicationData();
     } catch (err) {
-      showAlert("خطأ: " + err.message, "error");
+      showAlert("Hata: " + err.message, "error");
     }
   });
 
@@ -945,27 +919,27 @@ const setupEventListeners = () => {
     const notes = document.getElementById("prod-damage-notes").value;
 
     if (!typeId) {
-      showAlert("يرجى اختيار نوع البلوك!", "error");
+      showAlert("Lütfen blok tipini seçiniz!", "error");
       return;
     }
     if (waste === 0 && repair === 0) {
-      showAlert("يرجى إدخال كميات الكسر تالف كلي أو تحت الإصلاح!", "error");
+      showAlert("Lütfen fire veya onarılacak kırık miktarlarını giriniz!", "error");
       return;
     }
 
     try {
       if (waste > 0) {
-        await window.dbOps.addTransaction(typeId, "waste", waste, "تالف ساحة إنتاج: " + notes, currentUser.name);
+        await window.dbOps.addTransaction(typeId, "waste", waste, "Üretim sahası firesi: " + notes, currentUser.name);
       }
       if (repair > 0) {
-        await window.dbOps.addTransaction(typeId, "to_repair", repair, "تحت الإصلاح إنتاج: " + notes, currentUser.name);
+        await window.dbOps.addTransaction(typeId, "to_repair", repair, "Üretim sahası onarımda bims: " + notes, currentUser.name);
       }
 
-      showAlert("تم تسجيل الكسر والهدر اليومي وتحديث الأرصدة!", "success");
+      showAlert("Günlük zayiat ve hasar kaydı başarıyla eklendi!", "success");
       document.getElementById("form-prod-damage").reset();
       await refreshApplicationData();
     } catch (err) {
-      showAlert("خطأ أثناء الحفظ: " + err.message, "error");
+      showAlert("Kaydetme esnasında hata: " + err.message, "error");
     }
   });
 
@@ -996,17 +970,17 @@ const setupEventListeners = () => {
     const qty = document.getElementById("rep-quantity").value;
 
     if (!typeId) {
-      showAlert("يرجى اختيار نوع البلوك!", "error");
+      showAlert("Lütfen blok tipini seçiniz!", "error");
       return;
     }
 
     try {
-      await window.dbOps.addTransaction(typeId, "repaired", qty, "إرجاع بلوك مصلح للساحة", currentUser.name);
-      showAlert("تم تأكيد إصلاح البلوك وإعادته إلى المخزون المتاح بنجاح!", "success");
+      await window.dbOps.addTransaction(typeId, "repaired", qty, "Onarılan bimslerin stoğa iadesi", currentUser.name);
+      showAlert("Hasarlı bimslerin onarımı başarıyla onaylandı ve stoğa iade edildi!", "success");
       formRepComp.reset();
       await refreshApplicationData();
     } catch (err) {
-      showAlert("خطأ: " + err.message, "error");
+      showAlert("Hata: " + err.message, "error");
     }
   });
 
@@ -1018,27 +992,27 @@ const setupEventListeners = () => {
     const repair = Number(document.getElementById("load-damage-repair").value || 0);
 
     if (!typeId) {
-      showAlert("يرجى اختيار نوع البلوك!", "error");
+      showAlert("Lütfen blok tipini seçiniz!", "error");
       return;
     }
     if (waste === 0 && repair === 0) {
-      showAlert("يرجى إدخال كمية التالف أو ما يجب إصلاحه!", "error");
+      showAlert("Lütfen fire veya onarılacak kırık miktarlarını giriniz!", "error");
       return;
     }
 
     try {
       if (waste > 0) {
-        await window.dbOps.addTransaction(typeId, "waste", waste, "كسر تحميل تالف نهائي", currentUser.name);
+        await window.dbOps.addTransaction(typeId, "waste", waste, "Yükleme esnasında kırılan fire", currentUser.name);
       }
       if (repair > 0) {
-        await window.dbOps.addTransaction(typeId, "to_repair", repair, "كسر تحميل بحاجة لإصلاح", currentUser.name);
+        await window.dbOps.addTransaction(typeId, "to_repair", repair, "Yükleme esnasında onarılacak kırık", currentUser.name);
       }
 
-      showAlert("تم تسجيل كسر تحميل وتحديث الأرصدة بنجاح!", "success");
+      showAlert("Yükleme hasarı başarıyla kaydedildi ve stoklar güncellendi!", "success");
       formLoadDam.reset();
       await refreshApplicationData();
     } catch (err) {
-      showAlert("خطأ: " + err.message, "error");
+      showAlert("Hata: " + err.message, "error");
     }
   });
 
@@ -1053,11 +1027,11 @@ const setupEventListeners = () => {
 
     try {
       await window.dbOps.createBlockType(name, 0, 0, 0, initStock, minTh, maxTh, perPallet);
-      showAlert(`تم تعريف نوع البلوك "${name}" وتثبيت رصيد أول المدة بالنجاح!`, "success");
+      showAlert(`"${name}" blok tipi başarıyla tanımlandı ve başlangıç stoğu kuruldu!`, "success");
       document.getElementById("form-create-block").reset();
       await refreshApplicationData();
     } catch (err) {
-      showAlert("خطأ: " + err.message, "error");
+      showAlert("Hata: " + err.message, "error");
     }
   });
 
@@ -1083,12 +1057,56 @@ const setupEventListeners = () => {
 
     try {
       await window.dbOps.updateBlockType(id, name, 0, 0, 0, minTh, maxTh, perPallet);
-      showAlert(`تم تعديل مواصفات نوع البلوك "${name}" بنجاح!`, "success");
+      showAlert(`"${name}" blok tipinin özellikleri başarıyla güncellendi!`, "success");
       blockModal.classList.remove("active");
       await refreshApplicationData();
     } catch (err) {
-      showAlert("خطأ أثناء التعديل: " + err.message, "error");
+      showAlert("Güncelleme esnasında hata: " + err.message, "error");
     }
   });
 
+};
+
+// --- AUTOMATIC & MANUAL BACKGROUND SYNC SYSTEM ---
+const initAutoSync = () => {
+  // 1. Manual Sync Button Click Listener
+  const btnSync = document.getElementById("btn-manual-sync");
+  if (btnSync) {
+    btnSync.addEventListener("click", async () => {
+      const syncIcon = document.getElementById("sync-icon");
+      if (syncIcon) syncIcon.classList.add("fa-spin");
+      
+      try {
+        await refreshApplicationData();
+        showAlert("Veriler başarıyla senkronize edildi ve envanter güncellendi!", "success");
+      } catch (err) {
+        showAlert("Senkronizasyon hatası: " + err.message, "error");
+      } finally {
+        if (syncIcon) {
+          // Keep spinning for 600ms for visual satisfaction
+          setTimeout(() => {
+            syncIcon.classList.remove("fa-spin");
+          }, 600);
+        }
+      }
+    });
+  }
+
+  // 2. Automatic periodic background sync every 60 seconds
+  setInterval(async () => {
+    const syncIcon = document.getElementById("sync-icon");
+    if (syncIcon) syncIcon.classList.add("fa-spin");
+    
+    try {
+      await refreshApplicationData();
+    } catch (err) {
+      console.warn("Background auto-sync failed:", err.message);
+    } finally {
+      if (syncIcon) {
+        setTimeout(() => {
+          syncIcon.classList.remove("fa-spin");
+        }, 600);
+      }
+    }
+  }, 60000);
 };

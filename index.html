@@ -1,13 +1,19 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="tr" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>نظام جرد ومخزون معمل البلوك</title>
+  <title>Bozel Bims - Envanter Takip Sistemi</title>
+  
+  <!-- Browser Favicon using the brand icon -->
+  <link rel="icon" type="image/png" href="bozel_bims_logo_icon.png">
+  
   <!-- CSS Stylesheet -->
   <link rel="stylesheet" href="style.css">
+  
   <!-- FontAwesome Icons for Beautiful Visuals -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <!-- Chart.js for Premium Interactive Dashboard Graphs -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -17,21 +23,21 @@
   <div id="alert-container" style="position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 10000; width: 90%; max-width: 500px; display: none;">
     <div id="alert-banner" class="alert-banner alert-success">
       <i id="alert-icon" class="fas fa-check-circle"></i>
-      <span id="alert-message">تمت العملية بنجاح!</span>
+      <span id="alert-message">İşlem başarıyla tamamlandı!</span>
     </div>
   </div>
 
-  <!-- Main App Header (Always Visible now, showing current Mode) -->
+  <!-- Main App Header (Unified with Brand Identity) -->
   <header id="app-header">
     <div class="header-container">
-      <div class="logo">
-        <i class="fas fa-cubes"></i>
-        <span>جرد مصنع البلوك</span>
+      <div class="logo" style="display: flex; align-items: center; gap: 0.75rem;">
+        <img src="bozel_bims_logo_text.png" alt="Bozel Bims Logo" style="height: 48px; width: auto; max-height: 100%; border-radius: var(--border-radius-sm);">
+        <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); border-left: 2px solid var(--glass-border); padding-left: 0.75rem; margin-left: 0.25rem;">Stok Takip Portalı</span>
       </div>
       <div class="user-badge" style="display: flex; align-items: center; gap: 0.75rem;">
-        <span id="header-user-role" class="badge-role badge-owner">وضع المشاهدة</span>
+        <span id="header-user-role" class="badge-role badge-owner">İzleyici Modu</span>
         <button id="btn-admin-login" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.35rem;">
-          <i class="fas fa-key"></i> دخول المدير
+          <i class="fas fa-key"></i> Yönetici Girişi
         </button>
       </div>
     </div>
@@ -43,19 +49,19 @@
     <!-- Main Application View (Displayed directly on load in View-Only) -->
     <section id="view-app">
       
-      <!-- Role-Based Navigation Tabs (Only Owner/Dashboard visible in View-Only) -->
+      <!-- Role-Based Navigation Tabs -->
       <nav class="tab-navigation" id="tab-nav-bar" style="margin-bottom: 1.5rem;">
         <button class="tab-btn active" data-target="owner-dashboard" id="tab-owner-dashboard">
-          <i class="fas fa-chart-line"></i> لوحة التحكم والإحصائيات
+          <i class="fas fa-chart-line"></i> Kontrol Paneli & İstatistikler
         </button>
         <button class="tab-btn hidden" data-target="production-portal" id="tab-production-portal">
-          <i class="fas fa-hammer"></i> بوابة الإنتاج اليومي
+          <i class="fas fa-hammer"></i> Günlük Üretim Portalı
         </button>
         <button class="tab-btn hidden" data-target="dispatch-portal" id="tab-dispatch-portal">
-          <i class="fas fa-truck-loading"></i> فياش التحميل والصيانة
+          <i class="fas fa-truck-loading"></i> Sevkiyat & Yükleme Fişleri
         </button>
         <button class="tab-btn hidden" data-target="admin-portal" id="tab-admin-portal">
-          <i class="fas fa-cogs"></i> إدارة أنواع البلوك
+          <i class="fas fa-cogs"></i> Blok Tipi Yönetimi
         </button>
       </nav>
 
@@ -67,14 +73,14 @@
           <!-- Connection & Sync Status -->
           <div id="btn-manual-sync" class="glass-card" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.5rem; border-color: hsla(210, 100%, 56%, 0.2); background: hsla(222, 25%, 8%, 0.5); border-radius: 30px; margin: 0; box-shadow: var(--shadow-sm); cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='hsla(210, 100%, 56%, 0.5)'; this.style.background='hsla(222, 25%, 12%, 0.7)';" onmouseout="this.style.transform='none'; this.style.borderColor='hsla(210, 100%, 56%, 0.2)'; this.style.background='hsla(222, 25%, 8%, 0.5)';">
             <i id="sync-icon" class="fas fa-sync-alt" style="color: var(--success); font-size: 0.75rem; transition: transform 0.3s ease;"></i>
-            <span style="color: var(--text-secondary);">اتصال ومزامنة حية:</span>
-            <span id="last-sync-time" style="font-weight: bold; color: var(--text-primary);">جاري المزامنة...</span>
+            <span style="color: var(--text-secondary);">Canlı Bağlantı & Senkronizasyon:</span>
+            <span id="last-sync-time" style="font-weight: bold; color: var(--text-primary);">Senkronize Ediliyor...</span>
           </div>
           <!-- Last Data Entry Status -->
           <div class="glass-card" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.5rem; border-color: hsla(20, 95%, 55%, 0.2); background: hsla(222, 25%, 8%, 0.5); border-radius: 30px; margin: 0; box-shadow: var(--shadow-sm);">
             <i class="fas fa-history" style="color: var(--primary); font-size: 0.75rem;"></i>
-            <span style="color: var(--text-secondary);">آخر حركة وإدخال بيانات:</span>
-            <span id="last-data-update-time" style="font-weight: bold; color: var(--text-primary);">جاري التحقق...</span>
+            <span style="color: var(--text-secondary);">Son Güncelleme Zamanı:</span>
+            <span id="last-data-update-time" style="font-weight: bold; color: var(--text-primary);">Kontrol Ediliyor...</span>
           </div>
         </div>
 
@@ -83,28 +89,28 @@
           <div class="glass-card stat-card">
             <div class="stat-info">
               <span class="stat-value" id="stat-total-stock">0</span>
-              <p>إجمالي الباليتات المتاحة</p>
+              <p>Toplam Satışa Hazır Palet</p>
             </div>
             <div class="stat-icon icon-stock"><i class="fas fa-layer-group"></i></div>
           </div>
           <div class="glass-card stat-card">
             <div class="stat-info">
               <span class="stat-value" id="stat-month-production" class="qty-plus">0</span>
-              <p>إنتاج الشهر الحالي (باليت)</p>
+              <p>Bu Ayki Toplam Üretim (Palet)</p>
             </div>
             <div class="stat-icon icon-prod"><i class="fas fa-plus-circle"></i></div>
           </div>
           <div class="glass-card stat-card">
             <div class="stat-info">
               <span class="stat-value" id="stat-month-dispatch" class="qty-minus">0</span>
-              <p>تحميل الشهر الحالي (باليت)</p>
+              <p>Bu Ayki Toplam Sevkiyat (Palet)</p>
             </div>
             <div class="stat-icon icon-disp"><i class="fas fa-truck"></i></div>
           </div>
           <div class="glass-card stat-card">
             <div class="stat-info">
               <span class="stat-value" id="stat-total-repair" class="qty-warning">0</span>
-              <p>باليتات تحت الإصلاح</p>
+              <p>Onarımdaki Güncel Palet</p>
             </div>
             <div class="stat-icon icon-repair"><i class="fas fa-tools"></i></div>
           </div>
@@ -113,13 +119,13 @@
         <!-- Charts & Analytics Section -->
         <div class="grid-2" style="margin-bottom: 1.5rem;">
           <div class="glass-card">
-            <h3 style="margin-bottom: 1rem;"><i class="fas fa-chart-bar" style="color: var(--primary);"></i> حركة الإنتاج والمبيعات الشهرية</h3>
+            <h3 style="margin-bottom: 1rem;"><i class="fas fa-chart-bar" style="color: var(--primary);"></i> Aylık Üretim ve Satış Sevkiyat Grafiği</h3>
             <div class="chart-container">
               <canvas id="monthlyChart"></canvas>
             </div>
           </div>
           <div class="glass-card">
-            <h3 style="margin-bottom: 1rem;"><i class="fas fa-chart-pie" style="color: var(--accent-blue);"></i> توزيع المخزون حسب النوع</h3>
+            <h3 style="margin-bottom: 1rem;"><i class="fas fa-chart-pie" style="color: var(--accent-blue);"></i> Blok Tipine Göre Stok Dağılımı</h3>
             <div class="chart-container">
               <canvas id="stockDistributionChart"></canvas>
             </div>
@@ -129,9 +135,9 @@
         <!-- Live Inventory & Stocks Table Grid -->
         <div class="glass-card" style="margin-bottom: 1.5rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-            <h3><i class="fas fa-clipboard-list" style="color: var(--primary);"></i> جدول جرد المخزون الحي</h3>
+            <h3><i class="fas fa-clipboard-list" style="color: var(--primary);"></i> Canlı Stok Envanter Tablosu</h3>
             <div style="display: flex; gap: 0.5rem;">
-              <input type="text" id="inventory-search" class="form-input" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; width: 200px;" placeholder="ابحث عن نوع بلوك...">
+              <input type="text" id="inventory-search" class="form-input" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; width: 200px;" placeholder="Blok tipi ara...">
             </div>
           </div>
           
@@ -139,17 +145,17 @@
             <table>
               <thead>
                 <tr>
-                  <th>نوع البلوك</th>
-                  <th>رصيد أول المدة</th>
-                  <th>تحت الإصلاح</th>
-                  <th>الرصيد المتاح للبيع</th>
-                  <th>حالة المخزون</th>
+                  <th>Blok Tipi</th>
+                  <th>Başlangıç Stoğu</th>
+                  <th>Onarımda Stok</th>
+                  <th>Mevcut Satışa Hazır Stok</th>
+                  <th>Stok Durumu</th>
                 </tr>
               </thead>
               <tbody id="inventory-table-body">
                 <!-- Dynamically populated rows -->
                 <tr>
-                  <td colspan="6" style="text-align: center; color: var(--text-muted);">جاري تحميل بيانات المخزون...</td>
+                  <td colspan="5" style="text-align: center; color: var(--text-muted);">Stok verileri yükleniyor...</td>
                 </tr>
               </tbody>
             </table>
@@ -158,11 +164,11 @@
 
         <!-- Recent Logs Section -->
         <div class="glass-card">
-          <h3><i class="fas fa-history" style="color: var(--primary);"></i> سجل الحركات الأخير</h3>
-          <p style="font-size: 0.85rem; margin-bottom: 1rem;">أحدث العمليات التي سجلها المشرفون لحظياً (تظهر أزرار التعديل والحذف فقط للمدير)</p>
+          <h3><i class="fas fa-history" style="color: var(--primary);"></i> Son İşlem Geçmişi</h3>
+          <p style="font-size: 0.85rem; margin-bottom: 1rem;">Sorumlu şefler tarafından anlık olarak girilen son işlemler (Düzenle ve Sil butonları sadece Yöneticilere görünür)</p>
           <div class="log-list" id="dashboard-log-list">
             <!-- Dynamically populated logs -->
-            <div style="text-align: center; color: var(--text-muted); padding: 2rem 0;">جاري تحميل سجل العمليات...</div>
+            <div style="text-align: center; color: var(--text-muted); padding: 2rem 0;">İşlem geçmişi yükleniyor...</div>
           </div>
         </div>
 
@@ -177,58 +183,58 @@
             
             <!-- Block Production Entry Form -->
             <div class="glass-card">
-              <h3><i class="fas fa-hammer" style="color: var(--success); margin-left: 0.5rem;"></i> تسجيل إنتاج بلوك جديد</h3>
-              <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">قم بإدخال نوع وكمية البلوك التي تم إنتاجها اليوم</p>
+              <h3><i class="fas fa-hammer" style="color: var(--success); margin-right: 0.5rem;"></i> Yeni Blok Üretim Kaydı</h3>
+              <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">Bugün üretimi tamamlanan blok miktarlarını palet bazında giriniz.</p>
               
               <form id="form-add-production" onsubmit="event.preventDefault();">
                 <div class="form-group">
-                  <label class="form-label" for="prod-block-type">نوع البلوك المنتَج</label>
+                  <label class="form-label" for="prod-block-type">Üretilen Blok Tipi</label>
                   <select class="form-input" id="prod-block-type" required>
-                    <option value="">اختر النوع...</option>
+                    <option value="">Seçiniz...</option>
                   </select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="prod-quantity">الكمية الصالحة بالباليتات (عدد الباليتات)</label>
-                  <input class="form-input" type="number" min="1" id="prod-quantity" placeholder="مثلاً: 10" required>
+                  <label class="form-label" for="prod-quantity">Sağlam Üretim Miktarı (Palet)</label>
+                  <input class="form-input" type="number" min="1" id="prod-quantity" placeholder="Örn: 10" required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="prod-notes">ملاحظات إضافية</label>
-                  <input class="form-input" type="text" id="prod-notes" placeholder="ملاحظات حول الوردية أو ساحة الإنتاج...">
+                  <label class="form-label" for="prod-notes">Vardiya / Üretim Notları</label>
+                  <input class="form-input" type="text" id="prod-notes" placeholder="Üretim sahası veya vardiya ek notları...">
                 </div>
                 <button type="submit" class="btn btn-success">
-                  <i class="fas fa-check"></i> حفظ عملية الإنتاج
+                  <i class="fas fa-check"></i> Üretim İşlemini Kaydet
                 </button>
               </form>
             </div>
 
             <!-- Damage/Needs Repair Entry Form -->
             <div class="glass-card">
-              <h3><i class="fas fa-exclamation-triangle" style="color: var(--warning); margin-left: 0.5rem;"></i> تسجيل كسر وهدر في ساحة الإنتاج</h3>
-              <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">قم بتسجيل البلوك المكسور أو الذي يتطلب صيانة وإصلاح</p>
+              <h3><i class="fas fa-exclamation-triangle" style="color: var(--warning); margin-right: 0.5rem;"></i> Üretim Sahası Hasar & Kırık Kaydı</h3>
+              <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">Üretim veya taşıma esnasında hasar gören bims paletlerini kaydedin.</p>
               
               <form id="form-prod-damage" onsubmit="event.preventDefault();">
                 <div class="form-group">
-                  <label class="form-label" for="prod-damage-type">نوع البلوك</label>
+                  <label class="form-label" for="prod-damage-type">Blok Tipi</label>
                   <select class="form-input" id="prod-damage-type" required>
-                    <option value="">اختر النوع...</option>
+                    <option value="">Seçiniz...</option>
                   </select>
                 </div>
                 <div class="grid-2">
                   <div class="form-group">
-                    <label class="form-label" for="prod-damage-waste">كسر تالف كلياً بالباليتات</label>
+                    <label class="form-label" for="prod-damage-waste">Tamamen Zayi / Fire (Palet)</label>
                     <input class="form-input" type="number" min="0" id="prod-damage-waste" value="0">
                   </div>
                   <div class="form-group">
-                    <label class="form-label" for="prod-damage-repair">كسر قابل للإصلاح بالباليتات</label>
+                    <label class="form-label" for="prod-damage-repair">Onarılabilir Kırık (Palet)</label>
                     <input class="form-input" type="number" min="0" id="prod-damage-repair" value="0">
                   </div>
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="prod-damage-notes">ملاحظات</label>
-                  <input class="form-input" type="text" id="prod-damage-notes" placeholder="سبب الكسر أو مكان وقوعه...">
+                  <label class="form-label" for="prod-damage-notes">Hasar Nedeni / Notlar</label>
+                  <input class="form-input" type="text" id="prod-damage-notes" placeholder="Kırılma nedeni veya saha konumu...">
                 </div>
                 <button type="submit" class="btn btn-warning">
-                  <i class="fas fa-save"></i> تسجيل الكسر والهدر
+                  <i class="fas fa-save"></i> Zayiat ve Hasar Kaydını Tamamla
                 </button>
               </form>
             </div>
@@ -237,10 +243,10 @@
 
           <!-- Column 2: Specific Recent Log -->
           <div class="glass-card">
-            <h3><i class="fas fa-list-alt" style="color: var(--success);"></i> حركاتي المسجلة اليوم</h3>
-            <p style="font-size: 0.85rem; margin-bottom: 1.25rem;">العمليات اليومية التي قمت بإدخالها (يمكن تعديلها أو حذفها)</p>
+            <h3><i class="fas fa-list-alt" style="color: var(--success);"></i> Bugün Kaydettiğim İşlemler</h3>
+            <p style="font-size: 0.85rem; margin-bottom: 1.25rem;">Bugün sisteme girmiş olduğunuz üretim ve zayiat geçmişi (düzenlenebilir/silinebilir).</p>
             <div class="log-list" id="prod-portal-logs">
-              <div style="text-align: center; color: var(--text-muted); padding: 2rem 0;">لا توجد عمليات مسجلة لك اليوم بعد.</div>
+              <div style="text-align: center; color: var(--text-muted); padding: 2rem 0;">Bugün henüz bir işlem kaydetmediniz.</div>
             </div>
           </div>
 
@@ -256,20 +262,20 @@
             
             <!-- Dispatch Entry Form (MUTLI-ITEM SUPPORT) -->
             <div class="glass-card">
-              <h3><i class="fas fa-truck-loading" style="color: var(--primary); margin-left: 0.5rem;"></i> تسجيل فيش تحميل (صادر ومبيعات متعدد المواد)</h3>
-              <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">سجل البلوك المحمَّل للعميل، يمكنك إضافة أكثر من نوع في نفس الفيش</p>
+              <h3><i class="fas fa-truck-loading" style="color: var(--primary); margin-right: 0.5rem;"></i> Sevkiyat Fişi Kaydı (Çoklu Ürün Çıkışı)</h3>
+              <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">Müşteriye yüklenen blokları palet bazında yazın. Tek fişe birden fazla ürün ekleyebilirsiniz.</p>
               
               <form id="form-add-dispatch" onsubmit="event.preventDefault();">
                 
                 <!-- Ticket Details (Customer & Ticket No) -->
                 <div class="grid-2" style="margin-bottom: 1rem;">
                   <div class="form-group">
-                    <label class="form-label" for="disp-customer">اسم العميل / رقم السيارة</label>
-                    <input class="form-input" type="text" id="disp-customer" placeholder="مثلاً: العميل المقاول أبو علي" required>
+                    <label class="form-label" for="disp-customer">Müşteri Adı / Araç Plakası</label>
+                    <input class="form-input" type="text" id="disp-customer" placeholder="Örn: Ahmet İnşaat / 34 ABC 123" required>
                   </div>
                   <div class="form-group">
-                    <label class="form-label" for="disp-ticket-no">رقم فيش التحميل</label>
-                    <input class="form-input" type="text" id="disp-ticket-no" placeholder="مثلاً: فيش رقم 2045" required>
+                    <label class="form-label" for="disp-ticket-no">Sevkiyat Fiş Numarası</label>
+                    <input class="form-input" type="text" id="disp-ticket-no" placeholder="Örn: Fiş No 2045" required>
                   </div>
                 </div>
 
@@ -278,86 +284,86 @@
                   <!-- Row 1 (Default row) -->
                   <div class="dispatch-item-row grid-2" style="margin-bottom: 0.75rem; align-items: flex-end; position: relative;">
                     <div class="form-group" style="margin-bottom: 0; width: 100%;">
-                      <label class="form-label">نوع البلوك</label>
+                      <label class="form-label">Blok Tipi</label>
                       <select class="form-input disp-item-select" required>
-                        <option value="">اختر النوع...</option>
+                        <option value="">Seçiniz...</option>
                       </select>
                     </div>
                     <div class="form-group" style="margin-bottom: 0; width: 100%;">
-                      <label class="form-label">الكمية الصادرة بالباليتات</label>
-                      <input class="form-input disp-item-qty" type="number" min="1" placeholder="مثلاً: 15" required>
+                      <label class="form-label">Sevkedilen Miktar (Palet)</label>
+                      <input class="form-input disp-item-qty" type="number" min="1" placeholder="Örn: 15" required>
                     </div>
                   </div>
                 </div>
 
                 <!-- Button to append a new item row to the ticket -->
                 <button type="button" class="btn btn-secondary" id="btn-add-dispatch-row" style="margin-bottom: 1.5rem; padding: 0.5rem 1rem; width: auto; font-size: 0.85rem; display: inline-flex;">
-                  <i class="fas fa-plus-circle"></i> ➕ إضافة نوع بلوك آخر للفيش
+                  <i class="fas fa-plus-circle"></i> ➕ Fişe Başka Bir Blok Tipi Ekle
                 </button>
 
                 <div class="form-group">
-                  <label class="form-label" for="disp-notes">ملاحظات إضافية للفيش</label>
-                  <input class="form-input" type="text" id="disp-notes" placeholder="ملاحظات حول طريقة الدفع أو التوصيل...">
+                  <label class="form-label" for="disp-notes">Sevkiyat / Fiş Notları</label>
+                  <input class="form-input" type="text" id="disp-notes" placeholder="Ödeme şekli, şantiye konumu veya ek notlar...">
                 </div>
 
                 <button type="submit" class="btn btn-primary">
-                  <i class="fas fa-shipping-fast"></i> إتمام عملية التحميل وحفظ الفيش
+                  <i class="fas fa-shipping-fast"></i> Sevkiyatı Tamamla ve Fişi Kaydet
                 </button>
               </form>
             </div>
 
             <!-- Damage in loading & Repair completions -->
             <div class="glass-card">
-              <h3><i class="fas fa-wrench" style="color: var(--accent-blue); margin-left: 0.5rem;"></i> معالجة البلوك المصلح والكسر</h3>
-              <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">قم بتسجيل كسر التحميل والتخزين، أو البلوك الذي تم الانتهاء من إصلاحه</p>
+              <h3><i class="fas fa-wrench" style="color: var(--accent-blue); margin-right: 0.5rem;"></i> Onarılan Blok ve Yükleme Hasarları Yönetimi</h3>
+              <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">Yükleme ve depolamadaki kırıkları veya onarımı tamamlanan blokları sisteme giriniz.</p>
               
               <!-- Tab toggles for Action inside Repair block -->
               <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; background: rgba(0,0,0,0.2); padding: 0.25rem; border-radius: var(--border-radius-sm);">
                 <button type="button" class="btn btn-secondary btn-sm" id="toggle-loading-damage" style="padding: 0.4rem; font-size: 0.85rem; background: var(--bg-tertiary);">
-                  ⚠️ تسجيل كسر أثناء التحميل أو التخزين
+                  ⚠️ Yükleme / Depolama Zayiatı Kaydet
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm" id="toggle-repair-success" style="padding: 0.4rem; font-size: 0.85rem;">
-                  🔧 تم إصلاحه وإعادته للمخزن
+                  🔧 Onarıldı ve Stoğa İade Edildi
                 </button>
               </div>
 
-              <!-- Form B: Loading/Storage damage (Active by default) -->
+              <!-- Form B: Loading/Storage damage -->
               <form id="form-loading-damage" onsubmit="event.preventDefault();">
                 <div class="form-group">
-                  <label class="form-label" for="load-damage-type">نوع البلوك المتضرر</label>
+                  <label class="form-label" for="load-damage-type">Hasar Gören Blok Tipi</label>
                   <select class="form-input" id="load-damage-type" required>
-                    <option value="">اختر النوع...</option>
+                    <option value="">Seçiniz...</option>
                   </select>
                 </div>
                 <div class="grid-2">
                   <div class="form-group">
-                    <label class="form-label" for="load-damage-waste">تالف كلياً بالباليتات</label>
+                    <label class="form-label" for="load-damage-waste">Tamamen Zayi / Fire (Palet)</label>
                     <input class="form-input" type="number" min="0" id="load-damage-waste" value="0">
                   </div>
                   <div class="form-group">
-                    <label class="form-label" for="load-damage-repair">قابل للإصلاح بالباليتات</label>
+                    <label class="form-label" for="load-damage-repair">Onarılabilir Kırık (Palet)</label>
                     <input class="form-input" type="number" min="0" id="load-damage-repair" value="0">
                   </div>
                 </div>
                 <button type="submit" class="btn btn-warning">
-                  <i class="fas fa-exclamation-triangle"></i> تسجيل كسر التحميل والتخزين
+                  <i class="fas fa-exclamation-triangle"></i> Yükleme Hasarını Kaydet
                 </button>
               </form>
 
               <!-- Form A: Repair completed (Hidden by default) -->
               <form id="form-repaired-complete" class="hidden" onsubmit="event.preventDefault();">
                 <div class="form-group">
-                  <label class="form-label" for="rep-block-type">نوع البلوك المصلح</label>
+                  <label class="form-label" for="rep-block-type">Onarılan Blok Tipi</label>
                   <select class="form-input" id="rep-block-type" required>
-                    <option value="">اختر النوع...</option>
+                    <option value="">Seçiniz...</option>
                   </select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="rep-quantity">الكمية التي تم إصلاحها بالباليتات</label>
-                  <input class="form-input" type="number" min="1" id="rep-quantity" placeholder="مثلاً: 5" required>
+                  <label class="form-label" for="rep-quantity">Onarımı Tamamlanan Miktar (Palet)</label>
+                  <input class="form-input" type="number" min="1" id="rep-quantity" placeholder="Örn: 5" required>
                 </div>
                 <button type="submit" class="btn btn-accent-blue" style="background: linear-gradient(135deg, var(--accent-blue), hsl(210, 100%, 45%));">
-                  <i class="fas fa-tools"></i> تأكيد إعادة البلوك للمخزن
+                  <i class="fas fa-tools"></i> Stoğa Dönüşü Onayla
                 </button>
               </form>
 
@@ -367,10 +373,10 @@
 
           <!-- Column 2: Dispatch logs -->
           <div class="glass-card">
-            <h3><i class="fas fa-list-alt" style="color: var(--primary);"></i> حركاتي المسجلة اليوم</h3>
-            <p style="font-size: 0.85rem; margin-bottom: 1.25rem;">سجل التحميل والإصلاح الخاص بك لهذا اليوم (يمكن التعديل أو الحذف)</p>
+            <h3><i class="fas fa-list-alt" style="color: var(--primary);"></i> Bugün Kaydettiğim İşlemler</h3>
+            <p style="font-size: 0.85rem; margin-bottom: 1.25rem;">Bugün gerçekleştirdiğiniz sevkiyat, kırık ve onarım geçmişi (düzenlenebilir/silinebilir).</p>
             <div class="log-list" id="disp-portal-logs">
-              <div style="text-align: center; color: var(--text-muted); padding: 2rem 0;">لا توجد عمليات مسجلة لك اليوم بعد.</div>
+              <div style="text-align: center; color: var(--text-muted); padding: 2rem 0;">Bugün henüz bir işlem kaydetmediniz.</div>
             </div>
           </div>
 
@@ -383,49 +389,49 @@
           
           <!-- Create Block Type Form -->
           <div class="glass-card">
-            <h3><i class="fas fa-folder-plus" style="color: var(--danger);"></i> تعريف وإضافة نوع بلوك جديد</h3>
-            <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">تحديد مواصفات نوع بلوك جديد وإدخال رصيد المخزون التأسيسي له</p>
+            <h3><i class="fas fa-folder-plus" style="color: var(--danger);"></i> Yeni Blok Tipi Tanımlama ve Ekleme</h3>
+            <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">Sistemde takip edilecek yeni bir bims blok tipi oluşturup başlangıç stoğunu giriniz.</p>
             
             <form id="form-create-block" onsubmit="event.preventDefault();">
               <div class="form-group">
-                <label class="form-label" for="block-name">اسم نوع البلوك</label>
-                <input class="form-input" type="text" id="block-name" placeholder="مثلاً: بلوك هوردي 20، بلوك مصمت 15..." required>
+                <label class="form-label" for="block-name">Blok Tipi Adı</label>
+                <input class="form-input" type="text" id="block-name" placeholder="Örn: Boşluklu Bims 20, Asmolen 20..." required>
               </div>
 
               <div class="grid-2">
                 <div class="form-group">
-                  <label class="form-label" for="block-min-threshold">حد الخطر بالباليت (منخفض جداً)</label>
-                  <input class="form-input" type="number" id="block-min-threshold" value="10" placeholder="مثلاً: 10" required>
+                  <label class="form-label" for="block-min-threshold">Kritik Stok Sınırı (Palet) - Risk Limiti</label>
+                  <input class="form-input" type="number" id="block-min-threshold" value="10" placeholder="Örn: 10" required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="block-max-threshold">حد الوفرة بالباليت (متوفر بكثرة)</label>
-                  <input class="form-input" type="number" id="block-max-threshold" value="100" placeholder="مثلاً: 100" required>
+                  <label class="form-label" for="block-max-threshold">Bolluk Stok Sınırı (Palet) - Güvenli Limit</label>
+                  <input class="form-input" type="number" id="block-max-threshold" value="100" placeholder="Örn: 100" required>
                 </div>
               </div>
               <div class="grid-2">
                 <div class="form-group">
-                  <label class="form-label" for="block-initial-stock">المخزون التأسيسي (بالباليت)</label>
-                  <input class="form-input" type="number" min="0" id="block-initial-stock" placeholder="مثلاً: 100" required>
+                  <label class="form-label" for="block-initial-stock">Başlangıç Stok Miktarı (Palet)</label>
+                  <input class="form-input" type="number" min="0" id="block-initial-stock" placeholder="Örn: 100" required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="block-per-pallet">سعة الباليت (عدد البلوكات بالباليت)</label>
-                  <input class="form-input" type="number" min="1" id="block-per-pallet" value="120" placeholder="مثلاً: 120" required>
+                  <label class="form-label" for="block-per-pallet">Palet Kapasitesi (Palet Başına Blok Adeti)</label>
+                  <input class="form-input" type="number" min="1" id="block-per-pallet" value="120" placeholder="Örn: 120" required>
                 </div>
               </div>
               <button type="submit" class="btn btn-danger" style="background: linear-gradient(135deg, var(--danger), hsl(0,84%,50%));">
-                <i class="fas fa-plus"></i> إضافة وتعريف نوع البلوك
+                <i class="fas fa-plus"></i> Blok Tipini Tanımla ve Ekle
               </button>
             </form>
           </div>
 
           <!-- Existing Block Types list -->
           <div class="glass-card">
-            <h3><i class="fas fa-edit" style="color: var(--text-primary);"></i> إدارة أنواع البلوك الحالية</h3>
-            <p style="font-size: 0.85rem; margin-bottom: 1.25rem;">حذف أو مراجعة أنواع البلوك المعرّفة بالنظام</p>
+            <h3><i class="fas fa-edit" style="color: var(--text-primary);"></i> Mevcut Blok Tiplerini Yönet</h3>
+            <p style="font-size: 0.85rem; margin-bottom: 1.25rem;">Tanımlı blok tiplerinin envanter değerlerini inceleyin, güncelleyin veya silin.</p>
             
             <div class="log-list" id="admin-block-types-list">
               <!-- Dynamically populated block types with Edit/Delete options -->
-              <div style="text-align: center; color: var(--text-muted); padding: 2rem 0;">جاري تحميل القائمة...</div>
+              <div style="text-align: center; color: var(--text-muted); padding: 2rem 0;">Liste yükleniyor...</div>
             </div>
           </div>
 
@@ -441,17 +447,17 @@
     <div class="glass-card modal-card" style="max-width: 380px;">
       <div class="modal-header">
         <h3 style="display: flex; align-items: center; gap: 0.5rem; color: var(--primary);">
-          <i class="fas fa-lock"></i> وضع الإدارة والعمليات
+          <i class="fas fa-lock"></i> Yönetici Kimlik Doğrulama
         </h3>
         <button type="button" class="close-modal" id="btn-close-login-modal">&times;</button>
       </div>
       <form id="form-admin-login" onsubmit="event.preventDefault();">
         <div class="form-group">
-          <label class="form-label" for="admin-password">رمز المرور السري للدخول</label>
-          <input class="form-input" type="password" id="admin-password" placeholder="أدخل الرمز السري (مثلاً: 1234)..." required>
+          <label class="form-label" for="admin-password">Giriş İçin Yönetici Şifresi</label>
+          <input class="form-input" type="password" id="admin-password" placeholder="Yönetici şifresini girin (Örn: 1234)..." required>
         </div>
         <button type="submit" class="btn btn-primary" id="btn-submit-admin-login">
-          <i class="fas fa-unlock"></i> تفعيل صلاحيات الإدارة الكاملة
+          <i class="fas fa-unlock"></i> Yönetici Yetkisini Aktif Et
         </button>
       </form>
     </div>
@@ -462,72 +468,74 @@
     <div class="glass-card modal-card" style="max-width: 450px;">
       <div class="modal-header">
         <h3 style="display: flex; align-items: center; gap: 0.5rem; color: var(--primary);">
-          <i class="fas fa-edit"></i> تعديل تفاصيل العملية
+          <i class="fas fa-edit"></i> İşlem Detaylarını Düzenle
         </h3>
         <button type="button" class="close-modal" id="btn-close-edit-modal">&times;</button>
       </div>
       <form id="form-edit-tx" onsubmit="event.preventDefault();">
         <input type="hidden" id="edit-tx-id">
         <div class="form-group" style="padding: 0.5rem; background: rgba(0,0,0,0.15); border-radius: var(--border-radius-sm); margin-bottom: 1rem;">
-          <span class="form-label" style="margin-bottom: 0.25rem;">تفاصيل العملية الأصلية:</span>
-          <span id="edit-tx-label" style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary);">نوع العملية والمنفذ</span>
+          <span class="form-label" style="margin-bottom: 0.25rem;">Orijinal İşlem Detayı:</span>
+          <span id="edit-tx-label" style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary);">İşlem Tipi ve Sorumlu</span>
         </div>
         <div class="form-group">
-          <label class="form-label" for="edit-tx-block-type">نوع البلوك</label>
+          <label class="form-label" for="edit-tx-block-type">Blok Tipi</label>
           <select class="form-input" id="edit-tx-block-type" required>
             <!-- Populated dynamically -->
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label" for="edit-tx-quantity">الكمية المسجلة (عدد البلوكات)</label>
+          <label class="form-label" for="edit-tx-quantity">Kaydedilen Miktar (Palet)</label>
           <input class="form-input" type="number" min="1" id="edit-tx-quantity" required>
         </div>
         <div class="form-group">
-          <label class="form-label" for="edit-tx-notes">الملاحظات</label>
-          <input class="form-input" type="text" id="edit-tx-notes" placeholder="ملاحظات الحركة...">
+          <label class="form-label" for="edit-tx-notes">Açıklama / Notlar</label>
+          <input class="form-input" type="text" id="edit-tx-notes" placeholder="İşlem açıklaması...">
         </div>
         <button type="submit" class="btn btn-primary" id="btn-save-edit-tx">
-          <i class="fas fa-save"></i> حفظ التعديلات وإعادة ضبط المخزون
+          <i class="fas fa-save"></i> Değişiklikleri Kaydet ve Stoğu Güncelle
         </button>
       </form>
     </div>
   </div>
+
   <!-- Edit Block Type Modal (Glassmorphic Modal overlay) -->
   <div id="edit-block-modal" class="modal-overlay">
     <div class="glass-card modal-card" style="max-width: 450px;">
       <div class="modal-header">
         <h3 style="display: flex; align-items: center; gap: 0.5rem; color: var(--primary);">
-          <i class="fas fa-edit"></i> تعديل مواصفات نوع البلوك
+          <i class="fas fa-edit"></i> Blok Tipi Özelliklerini Düzenle
         </h3>
         <button type="button" class="close-modal" id="btn-close-block-modal">&times;</button>
       </div>
       <form id="form-edit-block" onsubmit="event.preventDefault();">
         <input type="hidden" id="edit-block-id">
         <div class="form-group">
-          <label class="form-label" for="edit-block-name">اسم نوع البلوك</label>
+          <label class="form-label" for="edit-block-name">Blok Tipi Adı</label>
           <input class="form-input" type="text" id="edit-block-name" required>
         </div>
 
         <div class="grid-2" style="margin-bottom: 1rem;">
           <div class="form-group" style="margin-bottom: 0;">
-            <label class="form-label" for="edit-block-min-threshold">حد الخطر بالباليت</label>
+            <label class="form-label" for="edit-block-min-threshold">Kritik Sınır (Palet)</label>
             <input class="form-input" type="number" id="edit-block-min-threshold" required>
           </div>
           <div class="form-group" style="margin-bottom: 0;">
-            <label class="form-label" for="edit-block-max-threshold">حد الوفرة بالباليت</label>
+            <label class="form-label" for="edit-block-max-threshold">Bolluk Sınırı (Palet)</label>
             <input class="form-input" type="number" id="edit-block-max-threshold" required>
           </div>
         </div>
         <div class="form-group" style="margin-bottom: 1rem;">
-          <label class="form-label" for="edit-block-per-pallet">سعة الباليت (عدد البلوكات بالباليت)</label>
+          <label class="form-label" for="edit-block-per-pallet">Palet Kapasitesi (Adet/Palet)</label>
           <input class="form-input" type="number" min="1" id="edit-block-per-pallet" required>
         </div>
         <button type="submit" class="btn btn-primary" id="btn-save-edit-block">
-          <i class="fas fa-save"></i> حفظ التعديلات والمواصفات
+          <i class="fas fa-save"></i> Değişiklikleri ve Özellikleri Kaydet
         </button>
       </form>
     </div>
   </div>
+
   <!-- Google Firebase Compatibility SDK (Required for local file:// execution without CORS restrictions) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>

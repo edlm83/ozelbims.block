@@ -6,19 +6,19 @@
 
 // --- SEED DATA FOR DEMO MODE (LocalStorage Sandbox) ---
 const INITIAL_BLOCK_TYPES = [
-  { id: "b1", name: "بلوك مفرغ 10", dimensions: { length: 40, width: 10, height: 20 }, initial_stock: 100, current_stock: 99, under_repair_stock: 0, min_threshold: 10, max_threshold: 80, blocks_per_pallet: 150, created_at: Date.now() - 100000000 },
-  { id: "b2", name: "بلوك مفرغ 15", dimensions: { length: 40, width: 15, height: 20 }, initial_stock: 200, current_stock: 190, under_repair_stock: 0, min_threshold: 15, max_threshold: 150, blocks_per_pallet: 120, created_at: Date.now() - 90000000 },
-  { id: "b3", name: "بلوك مفرغ 20", dimensions: { length: 40, width: 20, height: 20 }, initial_stock: 300, current_stock: 325, under_repair_stock: 0, min_threshold: 20, max_threshold: 200, blocks_per_pallet: 90, created_at: Date.now() - 80000000 },
-  { id: "b4", name: "بلوك مصمت 15", dimensions: { length: 40, width: 15, height: 20 }, initial_stock: 100, current_stock: 100, under_repair_stock: 0, min_threshold: 10, max_threshold: 80, blocks_per_pallet: 120, created_at: Date.now() - 70000000 },
-  { id: "b5", name: "بلوك هوردي 20", dimensions: { length: 40, width: 20, height: 20 }, initial_stock: 180, current_stock: 180, under_repair_stock: 0, min_threshold: 12, max_threshold: 120, blocks_per_pallet: 100, created_at: Date.now() - 60000000 }
+  { id: "b1", name: "Boşluklu Bims 10", dimensions: { length: 40, width: 10, height: 20 }, initial_stock: 100, current_stock: 99, under_repair_stock: 0, min_threshold: 10, max_threshold: 80, blocks_per_pallet: 150, created_at: Date.now() - 100000000 },
+  { id: "b2", name: "Boşluklu Bims 15", dimensions: { length: 40, width: 15, height: 20 }, initial_stock: 200, current_stock: 190, under_repair_stock: 0, min_threshold: 15, max_threshold: 150, blocks_per_pallet: 120, created_at: Date.now() - 90000000 },
+  { id: "b3", name: "Boşluklu Bims 20", dimensions: { length: 40, width: 20, height: 20 }, initial_stock: 300, current_stock: 325, under_repair_stock: 0, min_threshold: 20, max_threshold: 200, blocks_per_pallet: 90, created_at: Date.now() - 80000000 },
+  { id: "b4", name: "Dolu Blok 15", dimensions: { length: 40, width: 15, height: 20 }, initial_stock: 100, current_stock: 100, under_repair_stock: 0, min_threshold: 10, max_threshold: 80, blocks_per_pallet: 120, created_at: Date.now() - 70000000 },
+  { id: "b5", name: "Asmolen Bims 20", dimensions: { length: 40, width: 20, height: 20 }, initial_stock: 180, current_stock: 180, under_repair_stock: 0, min_threshold: 12, max_threshold: 120, blocks_per_pallet: 100, created_at: Date.now() - 60000000 }
 ];
 
 const INITIAL_TRANSACTIONS = [
-  { id: "t1", block_type_id: "b3", block_name: "بلوك مفرغ 20", type: "production", quantity: 25, created_by: "المهندس عماد (مشرف الإنتاج)", date: Date.now() - 86400000 * 2, notes: "إنتاج الوردية الصباحية - ساحة A" },
-  { id: "t2", block_type_id: "b2", block_name: "بلوك مفرغ 15", type: "dispatch", quantity: 10, created_by: "الأستاذ سامر (مشرف الفياش والتحميل)", date: Date.now() - 86400000 * 1.5, notes: "فيش رقم 2041 - العميل المقاول أبو خالد" },
-  { id: "t3", block_type_id: "b1", block_name: "بلوك مفرغ 10", type: "to_repair", quantity: 1, created_by: "المهندس عماد (مشرف الإنتاج)", date: Date.now() - 86400000 * 1, notes: "كسر أثناء النقل والترتيب بالساحة" },
-  { id: "t4", block_type_id: "b1", block_name: "بلوك مفرغ 10", type: "repaired", quantity: 1, created_by: "الأستاذ سامر (مشرف الفياش والتحميل)", date: Date.now() - 86400000 * 0.5, notes: "تم الانتهاء من إصلاحها وإعادتها للمخزون" },
-  { id: "t5", block_type_id: "b1", block_name: "بلوك مفرغ 10", type: "waste", quantity: 1, created_by: "الأستاذ سامر (مشرف الفياش والتحميل)", date: Date.now() - 86400000 * 0.2, notes: "تالف كلي كسر تحميل غير قابل للإصلاح" }
+  { id: "t1", block_type_id: "b3", block_name: "Boşluklu Bims 20", type: "production", quantity: 25, created_by: "İmdat Şef (Üretim Sorumlusu)", date: Date.now() - 86400000 * 2, notes: "Sabah Vardiyası Üretimi - Saha A" },
+  { id: "t2", block_type_id: "b2", block_name: "Boşluklu Bims 15", type: "dispatch", quantity: 10, created_by: "Samet Şef (Sevkiyat Sorumlusu)", date: Date.now() - 86400000 * 1.5, notes: "Fiş No 2041 - Müteahhit Ali Bey" },
+  { id: "t3", block_type_id: "b1", block_name: "Boşluklu Bims 10", type: "to_repair", quantity: 1, created_by: "İmdat Şef (Üretim Sorumlusu)", date: Date.now() - 86400000 * 1, notes: "Sahada taşıma esnasında oluşan kırıklar" },
+  { id: "t4", block_type_id: "b1", block_name: "Boşluklu Bims 10", type: "repaired", quantity: 1, created_by: "Samet Şef (Sevkiyat Sorumlusu)", date: Date.now() - 86400000 * 0.5, notes: "Onarımı tamamlanıp stoğa iade edildi" },
+  { id: "t5", block_type_id: "b1", block_name: "Boşluklu Bims 10", type: "waste", quantity: 1, created_by: "Samet Şef (Sevkiyat Sorumlusu)", date: Date.now() - 86400000 * 0.2, notes: "Kullanılamaz yükleme kırığı (tamamen fire)" }
 ];
 
 // Helper to initialize local storage databases
@@ -82,7 +82,7 @@ const getLastUpdateTimestamp = async () => {
       const doc = await promiseWithTimeout(
         getPromise,
         2500,
-        "انتهت مهلة قراءة توقيت تحديث البيانات."
+        "Veri güncelleme zamanı okuma süresi doldu."
       );
       if (doc.exists) {
         const data = doc.data();
@@ -109,7 +109,7 @@ const getBlockTypes = async () => {
       const snapshot = await promiseWithTimeout(
         getPromise,
         3500,
-        "انتهت مهلة الاتصال بخوادم جوجل Firebase (يرجى التأكد من الضغط على Create Database في تبويب Firestore وتفعيل القواعد على Test Mode)."
+        "Google Firebase sunucularına bağlantı zaman aşımına uğradı (Lütfen Firestore sekmesinde 'Create Database' butonuna tıkladığınızdan ve kuralları Test Modu olarak aktif ettiğinizden emin olun)."
       );
       
       let blocks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -147,14 +147,14 @@ const getBlockTypes = async () => {
       // Temporary fallback so UI doesn't hang
       window.isDemoMode = true;
       
-      let alertMsg = "فشل الاتصال السحابي وتم التحويل للوضع التجريبي المحلي مؤقتاً. ";
+      let alertMsg = "Bulut bağlantısı başarısız oldu ve geçici olarak yerel demo moduna geçildi. ";
       const errLower = error.message.toLowerCase();
       if (errLower.includes("permission") || errLower.includes("insufficient")) {
-        alertMsg += "السبب: قواعد أمان Firestore تمنع الوصول. يرجى الدخول لتبويب Rules في Firestore وتغيير القواعد إلى Test Mode (وضع الاختبار) كالتالي: allow read, write: if true;";
-      } else if (errLower.includes("not enabled") || errLower.includes("could not reach") || errLower.includes("failed-precondition") || errLower.includes("مهلة الاتصال")) {
-        alertMsg += "السبب: لم يتم إنشاء قاعدة بيانات Firestore لمشروعك بعد أو السحابة غير مفعلة. يرجى فتح Firebase Console، والضغط على Firestore Database ثم النقر على Create Database.";
+        alertMsg += "Nedeni: Firestore güvenlik kuralları erişimi engelliyor. Lütfen Firestore'daki 'Rules' sekmesine gidin ve kuralları Test Modu olarak şu şekilde güncelleyin: allow read, write: if true;";
+      } else if (errLower.includes("not enabled") || errLower.includes("could not reach") || errLower.includes("failed-precondition") || errLower.includes("time out") || errLower.includes("zaman aşımı")) {
+        alertMsg += "Nedeni: Projeniz için henüz Firestore veritabanı oluşturulmamış veya bulut aktif değil. Lütfen Firebase Konsolunu açın, 'Firestore Database' butonuna ve ardından 'Create Database' seçeneğine tıklayın.";
       } else {
-        alertMsg += "السبب: " + error.message;
+        alertMsg += "Nedeni: " + error.message;
       }
       
       throw new Error(alertMsg);
