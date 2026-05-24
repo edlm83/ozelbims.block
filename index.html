@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bozel Bims - Envanter Takip Sistemi</title>
+  <title>Ozel Bims-Stok Takip</title>
   
   <!-- Browser Favicon using the brand icon -->
   <link rel="icon" type="image/png" href="bozel_bims_logo_icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="bozel_bims_logo_icon.png">
+  <link rel="apple-touch-icon" href="bozel_bims_logo_icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="bozel_bims_logo_icon.png">
   
   <!-- CSS Stylesheet -->
   <link rel="stylesheet" href="style.css">
@@ -31,10 +34,18 @@
   <header id="app-header">
     <div class="header-container">
       <div class="logo" style="display: flex; align-items: center; gap: 0.75rem;">
-        <img src="bozel_bims_logo_text.png" alt="Bozel Bims Logo" style="height: 48px; width: auto; max-height: 100%; border-radius: var(--border-radius-sm);">
+        <img src="bozel_bims_logo_text.png" alt="Ozel Bims Logo" style="height: 48px; width: auto; max-height: 100%; border-radius: var(--border-radius-sm);">
         <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); border-left: 2px solid var(--glass-border); padding-left: 0.75rem; margin-left: 0.25rem;">Stok Takip Portalı</span>
       </div>
       <div class="user-badge" style="display: flex; align-items: center; gap: 0.75rem;">
+        <!-- Network Status Indicator -->
+        <div id="network-status" class="network-status-badge">
+          <span class="network-dot online-dot"></span>
+          <span id="network-text" class="network-text">Bağlı ve Hazır</span>
+        </div>
+        <button id="btn-theme-toggle" class="btn-theme" title="Tema Değiştir">
+          <i class="fas fa-sun" id="theme-toggle-icon"></i>
+        </button>
         <span id="header-user-role" class="badge-role badge-owner">İzleyici Modu</span>
         <button id="btn-admin-login" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.35rem;">
           <i class="fas fa-key"></i> Yönetici Girişi
@@ -71,13 +82,13 @@
         <!-- Last Sync & Last Data Entry Timestamp Badges -->
         <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem;">
           <!-- Connection & Sync Status -->
-          <div id="btn-manual-sync" class="glass-card" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.5rem; border-color: hsla(210, 100%, 56%, 0.2); background: hsla(222, 25%, 8%, 0.5); border-radius: 30px; margin: 0; box-shadow: var(--shadow-sm); cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='hsla(210, 100%, 56%, 0.5)'; this.style.background='hsla(222, 25%, 12%, 0.7)';" onmouseout="this.style.transform='none'; this.style.borderColor='hsla(210, 100%, 56%, 0.2)'; this.style.background='hsla(222, 25%, 8%, 0.5)';">
+          <div id="btn-manual-sync" class="sync-badge">
             <i id="sync-icon" class="fas fa-sync-alt" style="color: var(--success); font-size: 0.75rem; transition: transform 0.3s ease;"></i>
             <span style="color: var(--text-secondary);">Canlı Bağlantı & Senkronizasyon:</span>
             <span id="last-sync-time" style="font-weight: bold; color: var(--text-primary);">Senkronize Ediliyor...</span>
           </div>
           <!-- Last Data Entry Status -->
-          <div class="glass-card" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.5rem; border-color: hsla(20, 95%, 55%, 0.2); background: hsla(222, 25%, 8%, 0.5); border-radius: 30px; margin: 0; box-shadow: var(--shadow-sm);">
+          <div class="update-badge">
             <i class="fas fa-history" style="color: var(--primary); font-size: 0.75rem;"></i>
             <span style="color: var(--text-secondary);">Son Güncelleme Zamanı:</span>
             <span id="last-data-update-time" style="font-weight: bold; color: var(--text-primary);">Kontrol Ediliyor...</span>
@@ -207,38 +218,6 @@
               </form>
             </div>
 
-            <!-- Damage/Needs Repair Entry Form -->
-            <div class="glass-card">
-              <h3><i class="fas fa-exclamation-triangle" style="color: var(--warning); margin-right: 0.5rem;"></i> Üretim Sahası Hasar & Kırık Kaydı</h3>
-              <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">Üretim veya taşıma esnasında hasar gören bims paletlerini kaydedin.</p>
-              
-              <form id="form-prod-damage" onsubmit="event.preventDefault();">
-                <div class="form-group">
-                  <label class="form-label" for="prod-damage-type">Blok Tipi</label>
-                  <select class="form-input" id="prod-damage-type" required>
-                    <option value="">Seçiniz...</option>
-                  </select>
-                </div>
-                <div class="grid-2">
-                  <div class="form-group">
-                    <label class="form-label" for="prod-damage-waste">Tamamen Zayi / Fire (Palet)</label>
-                    <input class="form-input" type="number" min="0" id="prod-damage-waste" value="0">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label" for="prod-damage-repair">Onarılabilir Kırık (Palet)</label>
-                    <input class="form-input" type="number" min="0" id="prod-damage-repair" value="0">
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="prod-damage-notes">Hasar Nedeni / Notlar</label>
-                  <input class="form-input" type="text" id="prod-damage-notes" placeholder="Kırılma nedeni veya saha konumu...">
-                </div>
-                <button type="submit" class="btn btn-warning">
-                  <i class="fas fa-save"></i> Zayiat ve Hasar Kaydını Tamamla
-                </button>
-              </form>
-            </div>
-
           </div>
 
           <!-- Column 2: Specific Recent Log -->
@@ -312,27 +291,35 @@
               </form>
             </div>
 
-            <!-- Damage in loading & Repair completions -->
+            <!-- Unified Damage & Repair Management Card -->
             <div class="glass-card">
-              <h3><i class="fas fa-wrench" style="color: var(--accent-blue); margin-right: 0.5rem;"></i> Onarılan Blok ve Yükleme Hasarları Yönetimi</h3>
-              <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">Yükleme ve depolamadaki kırıkları veya onarımı tamamlanan blokları sisteme giriniz.</p>
+              <h3><i class="fas fa-wrench" style="color: var(--accent-blue); margin-right: 0.5rem;"></i> Zayiat, Kırık & Onarılan Blok Yönetimi</h3>
+              <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">Üretim sahası ve sevkiyattaki zayiat/kırıkları veya onarımı tamamlanan blokları kaydedin.</p>
               
               <!-- Tab toggles for Action inside Repair block -->
               <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; background: rgba(0,0,0,0.2); padding: 0.25rem; border-radius: var(--border-radius-sm);">
                 <button type="button" class="btn btn-secondary btn-sm" id="toggle-loading-damage" style="padding: 0.4rem; font-size: 0.85rem; background: var(--bg-tertiary);">
-                  ⚠️ Yükleme / Depolama Zayiatı Kaydet
+                  ⚠️ Hasar & Fire Kaydet
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm" id="toggle-repair-success" style="padding: 0.4rem; font-size: 0.85rem;">
-                  🔧 Onarıldı ve Stoğa İade Edildi
+                  🔧 Onarıldı ve Stoğa İade Et
                 </button>
               </div>
 
-              <!-- Form B: Loading/Storage damage -->
+              <!-- Form B: Unified Damage/Storage/Production damage -->
               <form id="form-loading-damage" onsubmit="event.preventDefault();">
                 <div class="form-group">
-                  <label class="form-label" for="load-damage-type">Hasar Gören Blok Tipi</label>
+                  <label class="form-label" for="load-damage-type">Blok Tipi</label>
                   <select class="form-input" id="load-damage-type" required>
                     <option value="">Seçiniz...</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="load-damage-location">Hasar / Kırılma Konumu</label>
+                  <select class="form-input" id="load-damage-location" required>
+                    <option value="Üretim Sahası">Üretim Sahası</option>
+                    <option value="Yükleme & Sevkiyat Alanı">Yükleme & Sevkiyat Alanı</option>
+                    <option value="Depo / Stok Sahası">Depo / Stok Sahası</option>
                   </select>
                 </div>
                 <div class="grid-2">
@@ -345,8 +332,12 @@
                     <input class="form-input" type="number" min="0" id="load-damage-repair" value="0">
                   </div>
                 </div>
+                <div class="form-group">
+                  <label class="form-label" for="load-damage-notes">Hasar Nedeni / Ek Notlar</label>
+                  <input class="form-input" type="text" id="load-damage-notes" placeholder="Kırılma nedeni veya detaylar...">
+                </div>
                 <button type="submit" class="btn btn-warning">
-                  <i class="fas fa-exclamation-triangle"></i> Yükleme Hasarını Kaydet
+                  <i class="fas fa-exclamation-triangle"></i> Zayiat ve Hasar Kaydını Tamamla
                 </button>
               </form>
 
@@ -411,7 +402,7 @@
               <div class="grid-2">
                 <div class="form-group">
                   <label class="form-label" for="block-initial-stock">Başlangıç Stok Miktarı (Palet)</label>
-                  <input class="form-input" type="number" min="0" id="block-initial-stock" placeholder="Örn: 100" required>
+                  <input class="form-input" type="number" min="0" id="block-initial-stock" placeholder="Örn: 100 (Opsiyonel, varsayılan: 0)">
                 </div>
                 <div class="form-group">
                   <label class="form-label" for="block-per-pallet">Palet Kapasitesi (Palet Başına Blok Adeti)</label>
@@ -454,7 +445,7 @@
       <form id="form-admin-login" onsubmit="event.preventDefault();">
         <div class="form-group">
           <label class="form-label" for="admin-password">Giriş İçin Yönetici Şifresi</label>
-          <input class="form-input" type="password" id="admin-password" placeholder="Yönetici şifresini girin (Örn: 1234)..." required>
+          <input class="form-input" type="password" id="admin-password" placeholder="Yönetici şifresini girin (Örn: 1234)..." required inputmode="numeric" pattern="[0-9]*">
         </div>
         <button type="submit" class="btn btn-primary" id="btn-submit-admin-login">
           <i class="fas fa-unlock"></i> Yönetici Yetkisini Aktif Et
@@ -525,14 +516,41 @@
             <input class="form-input" type="number" id="edit-block-max-threshold" required>
           </div>
         </div>
-        <div class="form-group" style="margin-bottom: 1rem;">
-          <label class="form-label" for="edit-block-per-pallet">Palet Kapasitesi (Adet/Palet)</label>
-          <input class="form-input" type="number" min="1" id="edit-block-per-pallet" required>
+        <div class="grid-2" style="margin-bottom: 1rem;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" for="edit-block-initial-stock">Başlangıç Stok Miktarı (Palet)</label>
+            <input class="form-input" type="number" min="0" id="edit-block-initial-stock" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" for="edit-block-per-pallet">Palet Kapasitesi (Adet/Palet)</label>
+            <input class="form-input" type="number" min="1" id="edit-block-per-pallet" required>
+          </div>
         </div>
         <button type="submit" class="btn btn-primary" id="btn-save-edit-block">
           <i class="fas fa-save"></i> Değişiklikleri ve Özellikleri Kaydet
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- Custom Confirm Modal (Beautiful Premium Glassmorphic Overlay) -->
+  <div id="confirm-modal" class="modal-overlay">
+    <div class="glass-card modal-card" style="max-width: 400px; border-color: hsla(0, 84%, 60%, 0.3);">
+      <div class="modal-header">
+        <h3 style="display: flex; align-items: center; gap: 0.5rem; color: var(--danger);">
+          <i class="fas fa-exclamation-triangle"></i> İşlemi Onayla
+        </h3>
+        <button type="button" class="close-modal" id="btn-close-confirm-modal">&times;</button>
+      </div>
+      <div style="margin-bottom: 1.5rem; font-size: 0.95rem; color: var(--text-primary);" id="confirm-modal-message">
+        Bu işlemi silmek istediğinizden emin misiniz?
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <button type="button" class="btn btn-secondary" id="btn-confirm-cancel" style="margin-bottom: 0;">Vazgeç</button>
+        <button type="button" class="btn btn-danger" id="btn-confirm-approve" style="margin-bottom: 0;">
+          <i class="fas fa-trash-alt"></i> Evet, Sil
+        </button>
+      </div>
     </div>
   </div>
 

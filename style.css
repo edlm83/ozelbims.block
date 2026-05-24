@@ -696,3 +696,228 @@ tr:hover td {
   }
 }
 
+/* ==========================================================================
+   LIGHT THEME VARIABLES & SYSTEM OVERRIDES
+   ========================================================================== */
+body.light-theme {
+  --bg-primary: hsl(210, 24%, 95%);
+  --bg-secondary: hsl(210, 20%, 100%);
+  --bg-tertiary: hsl(210, 16%, 88%);
+  
+  --glass-bg: hsla(210, 20%, 100%, 0.85);
+  --glass-border: hsla(222, 15%, 20%, 0.12);
+  --glass-highlight: hsla(0, 0%, 0%, 0.03);
+  
+  --text-primary: hsl(222, 25%, 15%);
+  --text-secondary: hsl(222, 15%, 40%);
+  --text-muted: hsl(222, 10%, 58%);
+  
+  --bg-input: hsl(210, 20%, 98%);
+  --log-item-bg: hsla(210, 20%, 92%, 0.5);
+  
+  background-color: var(--bg-primary);
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(358, 90%, 52%, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(210, 100%, 56%, 0.04) 0px, transparent 50%);
+}
+
+/* Light Mode Overrides for Specific Components */
+body.light-theme .form-input {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border-color: hsla(222, 15%, 20%, 0.15);
+}
+body.light-theme .form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 10px hsla(358, 90%, 52%, 0.1);
+}
+body.light-theme .log-item {
+  background: var(--log-item-bg);
+}
+body.light-theme select.form-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23333333'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.25rem;
+}
+body.light-theme th {
+  background-color: hsl(210, 20%, 92%);
+  color: var(--text-secondary);
+}
+body.light-theme tr:hover td {
+  background-color: hsla(222, 25%, 15%, 0.03);
+}
+body.light-theme .tab-btn {
+  background: hsl(210, 20%, 90%);
+  border-color: hsla(222, 15%, 20%, 0.1);
+  color: var(--text-secondary);
+}
+body.light-theme .tab-btn:hover {
+  background: hsl(210, 20%, 85%);
+  color: var(--text-primary);
+}
+body.light-theme .tab-btn.active {
+  background: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+body.light-theme header {
+  background: hsla(210, 20%, 96%, 0.85);
+}
+
+/* Premium Redesigned High-Contrast Alert Banners */
+.alert-banner {
+  padding: 0.85rem 1.25rem;
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.alert-success {
+  background: hsla(142, 76%, 8%, 0.92);
+  border-color: hsla(142, 76%, 45%, 0.45);
+  color: hsl(142, 76%, 88%);
+}
+.alert-error {
+  background: hsla(0, 84%, 8%, 0.92);
+  border-color: hsla(0, 84%, 60%, 0.45);
+  color: hsl(0, 84%, 88%);
+}
+.alert-info {
+  background: hsla(210, 100%, 8%, 0.92);
+  border-color: hsla(210, 100%, 56%, 0.45);
+  color: hsl(205, 100%, 88%);
+}
+
+/* Theme Toggle Button Style */
+.btn-theme {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: var(--transition-smooth);
+}
+.btn-theme:hover {
+  background: var(--bg-tertiary);
+  transform: scale(1.05);
+}
+body.light-theme .btn-theme {
+  background: hsl(210, 20%, 90%);
+}
+
+/* ==========================================================================
+   SYNC & UPDATE BADGES (DYNAMIC & RESPONSIVE THEMES)
+   ========================================================================== */
+.sync-badge, .update-badge {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 30px;
+  margin: 0;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-smooth);
+  background: hsla(222, 25%, 8%, 0.55);
+  border: 1px solid hsla(210, 100%, 56%, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.sync-badge {
+  cursor: pointer;
+}
+.sync-badge:hover {
+  transform: translateY(-2px);
+  border-color: hsla(210, 100%, 56%, 0.5);
+  background: hsla(222, 25%, 12%, 0.75);
+}
+.update-badge {
+  border-color: hsla(20, 95%, 55%, 0.2);
+}
+
+/* Light Theme Badge Overrides (Highly Legible Contrast) */
+body.light-theme .sync-badge {
+  background: hsla(210, 100%, 56%, 0.08);
+  border-color: hsla(210, 100%, 56%, 0.28);
+}
+body.light-theme .sync-badge:hover {
+  background: hsla(210, 100%, 56%, 0.15);
+  border-color: hsla(210, 100%, 56%, 0.5);
+}
+body.light-theme .update-badge {
+  background: hsla(20, 95%, 55%, 0.08);
+  border-color: hsla(20, 95%, 55%, 0.28);
+}
+
+/* ==========================================================================
+   NETWORK STATUS BADGE & BLINKING DOT ANIMATIONS
+   ========================================================================== */
+.network-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 30px;
+  background: var(--network-bg, hsla(142, 76%, 45%, 0.08));
+  border: 1px solid var(--network-border, hsla(142, 76%, 45%, 0.2));
+  color: var(--network-text-color, var(--success));
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-smooth);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.network-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: var(--transition-smooth);
+}
+
+.online-dot {
+  background-color: var(--success);
+  box-shadow: 0 0 6px var(--success);
+  animation: blink-green 1.6s ease-in-out infinite;
+}
+
+.offline-dot {
+  background-color: var(--danger);
+  box-shadow: 0 0 6px var(--danger);
+  animation: blink-red 1.6s ease-in-out infinite;
+}
+
+@keyframes blink-green {
+  0% { opacity: 0.45; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.15); box-shadow: 0 0 10px var(--success); }
+  100% { opacity: 0.45; transform: scale(0.9); }
+}
+
+@keyframes blink-red {
+  0% { opacity: 0.45; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.15); box-shadow: 0 0 10px var(--danger); }
+  100% { opacity: 0.45; transform: scale(0.9); }
+}
+
+@media (max-width: 480px) {
+  .network-status-badge {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
+  }
+}
+

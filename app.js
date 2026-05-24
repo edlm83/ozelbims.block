@@ -1,6 +1,6 @@
 /*
    Block Inventory Management System - Core Application Engine (Compat Mode)
-   Bozel Bims Envanter Takip ve Yönetim Sistemi
+   Özel Bims Envanter Takip ve Yönetim Sistemi
    Enforces a frictionless View-Only by default flow. 
    Unlocks full administrative entry/edits via a simple password prompt.
 */
@@ -16,10 +16,52 @@ let distributionChartInstance = null;
 
 // --- CORE SYSTEM INITIALIZATION ---
 document.addEventListener("DOMContentLoaded", () => {
+  initTheme();
   setupEventListeners();
   checkSession();
   initAutoSync();
+  updateNetworkStatus();
 });
+
+const updateNetworkStatus = () => {
+  const badge = document.getElementById("network-status");
+  if (!badge) return;
+  const dot = badge.querySelector(".network-dot");
+  const text = document.getElementById("network-text");
+  
+  if (navigator.onLine) {
+    dot.className = "network-dot online-dot";
+    text.textContent = "Bağlı ve Hazır";
+    badge.style.setProperty("--network-bg", "hsla(142, 76%, 45%, 0.08)");
+    badge.style.setProperty("--network-border", "hsla(142, 76%, 45%, 0.2)");
+    badge.style.setProperty("--network-text-color", "var(--success)");
+  } else {
+    dot.className = "network-dot offline-dot";
+    text.textContent = "Bağlantı Yok";
+    badge.style.setProperty("--network-bg", "hsla(0, 84%, 60%, 0.08)");
+    badge.style.setProperty("--network-border", "hsla(0, 84%, 60%, 0.2)");
+    badge.style.setProperty("--network-text-color", "var(--danger)");
+  }
+};
+
+window.addEventListener("online", updateNetworkStatus);
+window.addEventListener("offline", updateNetworkStatus);
+
+const initTheme = () => {
+  const savedTheme = localStorage.getItem("theme") || "dark";
+  const toggleIcon = document.getElementById("theme-toggle-icon");
+  if (savedTheme === "light") {
+    document.body.classList.add("light-theme");
+    if (toggleIcon) {
+      toggleIcon.className = "fas fa-moon";
+    }
+  } else {
+    document.body.classList.remove("light-theme");
+    if (toggleIcon) {
+      toggleIcon.className = "fas fa-sun";
+    }
+  }
+};
 
 // --- SESSION MANAGEMENT ---
 const checkSession = () => {
@@ -110,6 +152,37 @@ const showAlert = (message, type = "success") => {
       container.style.display = "none";
     }, 300);
   }, 4000);
+};
+
+// --- CUSTOM DIALOG CONFIRM MODAL UTILITY ---
+const showConfirm = (message, callback) => {
+  const modal = document.getElementById("confirm-modal");
+  const msgEl = document.getElementById("confirm-modal-message");
+  const btnApprove = document.getElementById("btn-confirm-approve");
+  const btnCancel = document.getElementById("btn-confirm-cancel");
+  const btnClose = document.getElementById("btn-close-confirm-modal");
+
+  msgEl.innerHTML = message;
+  modal.classList.add("active");
+
+  // Clear previous event listeners using cloneNode
+  const newApprove = btnApprove.cloneNode(true);
+  btnApprove.replaceWith(newApprove);
+  
+  const closeModal = () => {
+    modal.classList.remove("active");
+  };
+
+  newApprove.addEventListener("click", () => {
+    closeModal();
+    callback();
+  });
+
+  btnCancel.onclick = closeModal;
+  btnClose.onclick = closeModal;
+  modal.onclick = (e) => {
+    if (e.target === modal) closeModal();
+  };
 };
 
 // --- DATA MANAGEMENT ENGINE ---
@@ -490,7 +563,7 @@ const bindLogActionsEvents = (txs) => {
     btn.addEventListener("click", async (e) => {
       e.stopPropagation();
       const txId = btn.getAttribute("data-id");
-      if (confirm("⚠️ Bu işlemi silmek istediğinizden tamamen emin misiniz? Stok miktarları anlık olarak geri hesaplanacaktır!")) {
+      showConfirm("⚠️ Bu işlemi silmek istediğinizden tamamen emin misiniz? Stok miktarları anlık olarak geri hesaplanacaktır!", async () => {
         try {
           await window.dbOps.deleteTransaction(txId);
           showAlert("İşlem silindi ve stok miktarları başarıyla geri güncellendi!", "success");
@@ -498,7 +571,7 @@ const bindLogActionsEvents = (txs) => {
         } catch (error) {
           showAlert("Silme işlemi esnasında hata: " + error.message, "error");
         }
-      }
+      });
     });
   });
 
@@ -584,6 +657,7 @@ const renderAdminBlockList = () => {
       document.getElementById("edit-block-name").value = block.name;
       document.getElementById("edit-block-min-threshold").value = block.min_threshold || 10;
       document.getElementById("edit-block-max-threshold").value = block.max_threshold || 100;
+      document.getElementById("edit-block-initial-stock").value = block.initial_stock || 0;
       document.getElementById("edit-block-per-pallet").value = block.blocks_per_pallet || 120;
 
       document.getElementById("edit-block-modal").classList.add("active");
@@ -594,11 +668,15 @@ const renderAdminBlockList = () => {
     btn.addEventListener("click", async (e) => {
       const id = btn.getAttribute("data-id");
       const block = blockTypesList.find(b => b.id === id);
-      if (confirm(`⚠️ "${block.name}" blok tipini tamamen silmek istediğinizden emin misiniz? Bu tipe ait tüm envanter verileri silinecektir!`)) {
-        await window.dbOps.deleteBlockType(id);
-        showAlert("Blok tipi başarıyla silindi!", "success");
-        await refreshApplicationData();
-      }
+      showConfirm(`⚠️ <strong>"${block.name}"</strong> blok tipini tamamen silmek istediğinizden emin misiniz? Bu tipe ait tüm envanter verileri silinecektir!`, async () => {
+        try {
+          await window.dbOps.deleteBlockType(id);
+          showAlert("Blok tipi başarıyla silindi!", "success");
+          await refreshApplicationData();
+        } catch (error) {
+          showAlert("Silme işlemi esnasında hata: " + error.message, "error");
+        }
+      });
     });
   });
 };
@@ -608,6 +686,11 @@ const renderDashboardCharts = async () => {
 
   if (monthlyChartInstance) monthlyChartInstance.destroy();
   if (distributionChartInstance) distributionChartInstance.destroy();
+
+  const isLight = document.body.classList.contains("light-theme");
+  const chartTextColor = isLight ? "hsl(222, 15%, 35%)" : "hsl(218, 15%, 75%)";
+  const chartTickColor = isLight ? "hsl(222, 10%, 45%)" : "hsl(218, 12%, 55%)";
+  const chartGridColor = isLight ? "hsla(222, 15%, 35%, 0.08)" : "hsla(222, 25%, 25%, 0.2)";
 
   const ctxMonthly = document.getElementById("monthlyChart").getContext("2d");
   monthlyChartInstance = new Chart(ctxMonthly, {
@@ -639,11 +722,11 @@ const renderDashboardCharts = async () => {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { labels: { color: "hsl(218, 15%, 75%)", font: { family: "Tajawal" } } }
+        legend: { labels: { color: chartTextColor, font: { family: "Tajawal" } } }
       },
       scales: {
-        x: { grid: { color: "hsla(222, 25%, 25%, 0.2)" }, ticks: { color: "hsl(218, 12%, 55%)", font: { family: "Tajawal" } } },
-        y: { grid: { color: "hsla(222, 25%, 25%, 0.2)" }, ticks: { color: "hsl(218, 12%, 55%)", font: { family: "Tajawal" } } }
+        x: { grid: { color: chartGridColor }, ticks: { color: chartTickColor, font: { family: "Tajawal" } } },
+        y: { grid: { color: chartGridColor }, ticks: { color: chartTickColor, font: { family: "Tajawal" } } }
       }
     }
   });
@@ -667,7 +750,7 @@ const renderDashboardCharts = async () => {
       plugins: {
         legend: { 
           position: "right", 
-          labels: { color: "hsl(218, 15%, 75%)", font: { family: "Tajawal" } } 
+          labels: { color: chartTextColor, font: { family: "Tajawal" } } 
         }
       }
     }
@@ -726,7 +809,8 @@ const setupEventListeners = () => {
   // 3. Admin Password Submission Handler
   document.getElementById("form-admin-login").addEventListener("submit", (e) => {
     e.preventDefault();
-    const pass = document.getElementById("admin-password").value;
+    const passInput = document.getElementById("admin-password");
+    const pass = passInput.value;
 
     if (pass === ADMIN_PASSWORD) {
       currentUser = { role: "admin", name: "Genel Yönetici" };
@@ -734,12 +818,27 @@ const setupEventListeners = () => {
       
       loginModal.classList.remove("active");
       document.getElementById("form-admin-login").reset();
+      passInput.blur(); // Dismiss soft keyboard on mobile!
       
       showAlert("Yönetici yetkileri başarıyla aktif edildi!", "success");
       onLoginSuccess();
     } else {
       showAlert("Yönetici şifresi hatalı! Lütfen tekrar deneyiniz.", "error");
     }
+  });
+
+  // 4. Theme Toggle Button Handler
+  document.getElementById("btn-theme-toggle").addEventListener("click", () => {
+    const isLight = document.body.classList.toggle("light-theme");
+    const toggleIcon = document.getElementById("theme-toggle-icon");
+    if (isLight) {
+      localStorage.setItem("theme", "light");
+      if (toggleIcon) toggleIcon.className = "fas fa-moon";
+    } else {
+      localStorage.setItem("theme", "dark");
+      if (toggleIcon) toggleIcon.className = "fas fa-sun";
+    }
+    renderDashboardCharts(); // Redraw charts with correct text colors!
   });
 
   // Tabs Switch
@@ -910,13 +1009,15 @@ const setupEventListeners = () => {
     }
   });
 
-  // Production Damage/Waste Submit
-  document.getElementById("form-prod-damage").addEventListener("submit", async (e) => {
+  // Unified Damage/Zayiat/Waste Submit
+  const formLoadDam = document.getElementById("form-loading-damage");
+  formLoadDam.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const typeId = document.getElementById("prod-damage-type").value;
-    const waste = Number(document.getElementById("prod-damage-waste").value || 0);
-    const repair = Number(document.getElementById("prod-damage-repair").value || 0);
-    const notes = document.getElementById("prod-damage-notes").value;
+    const typeId = document.getElementById("load-damage-type").value;
+    const location = document.getElementById("load-damage-location").value;
+    const waste = Number(document.getElementById("load-damage-waste").value || 0);
+    const repair = Number(document.getElementById("load-damage-repair").value || 0);
+    const notes = document.getElementById("load-damage-notes").value.trim();
 
     if (!typeId) {
       showAlert("Lütfen blok tipini seçiniz!", "error");
@@ -928,15 +1029,18 @@ const setupEventListeners = () => {
     }
 
     try {
+      const locationPrefix = `[${location}]`;
+      const fullNotes = notes ? `${locationPrefix} ${notes}` : `${locationPrefix} Hasar kaydı`;
+      
       if (waste > 0) {
-        await window.dbOps.addTransaction(typeId, "waste", waste, "Üretim sahası firesi: " + notes, currentUser.name);
+        await window.dbOps.addTransaction(typeId, "waste", waste, fullNotes, currentUser.name);
       }
       if (repair > 0) {
-        await window.dbOps.addTransaction(typeId, "to_repair", repair, "Üretim sahası onarımda bims: " + notes, currentUser.name);
+        await window.dbOps.addTransaction(typeId, "to_repair", repair, fullNotes, currentUser.name);
       }
 
-      showAlert("Günlük zayiat ve hasar kaydı başarıyla eklendi!", "success");
-      document.getElementById("form-prod-damage").reset();
+      showAlert("Hasar ve zayiat kaydı başarıyla eklendi!", "success");
+      formLoadDam.reset();
       await refreshApplicationData();
     } catch (err) {
       showAlert("Kaydetme esnasında hata: " + err.message, "error");
@@ -945,7 +1049,6 @@ const setupEventListeners = () => {
 
   // Repairs Toggles
   const formRepComp = document.getElementById("form-repaired-complete");
-  const formLoadDam = document.getElementById("form-loading-damage");
   const btnTogRep = document.getElementById("toggle-repair-success");
   const btnTogDam = document.getElementById("toggle-loading-damage");
 
@@ -984,43 +1087,11 @@ const setupEventListeners = () => {
     }
   });
 
-  // Loading Damage Submit
-  formLoadDam.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const typeId = document.getElementById("load-damage-type").value;
-    const waste = Number(document.getElementById("load-damage-waste").value || 0);
-    const repair = Number(document.getElementById("load-damage-repair").value || 0);
-
-    if (!typeId) {
-      showAlert("Lütfen blok tipini seçiniz!", "error");
-      return;
-    }
-    if (waste === 0 && repair === 0) {
-      showAlert("Lütfen fire veya onarılacak kırık miktarlarını giriniz!", "error");
-      return;
-    }
-
-    try {
-      if (waste > 0) {
-        await window.dbOps.addTransaction(typeId, "waste", waste, "Yükleme esnasında kırılan fire", currentUser.name);
-      }
-      if (repair > 0) {
-        await window.dbOps.addTransaction(typeId, "to_repair", repair, "Yükleme esnasında onarılacak kırık", currentUser.name);
-      }
-
-      showAlert("Yükleme hasarı başarıyla kaydedildi ve stoklar güncellendi!", "success");
-      formLoadDam.reset();
-      await refreshApplicationData();
-    } catch (err) {
-      showAlert("Hata: " + err.message, "error");
-    }
-  });
-
   // Admin Create Block Type Submit
   document.getElementById("form-create-block").addEventListener("submit", async (e) => {
     e.preventDefault();
     const name = document.getElementById("block-name").value.trim();
-    const initStock = document.getElementById("block-initial-stock").value;
+    const initStock = document.getElementById("block-initial-stock").value || 0;
     const minTh = document.getElementById("block-min-threshold").value;
     const maxTh = document.getElementById("block-max-threshold").value;
     const perPallet = document.getElementById("block-per-pallet").value;
@@ -1053,10 +1124,11 @@ const setupEventListeners = () => {
     const name = document.getElementById("edit-block-name").value.trim();
     const minTh = document.getElementById("edit-block-min-threshold").value;
     const maxTh = document.getElementById("edit-block-max-threshold").value;
+    const initStock = document.getElementById("edit-block-initial-stock").value || 0;
     const perPallet = document.getElementById("edit-block-per-pallet").value;
 
     try {
-      await window.dbOps.updateBlockType(id, name, 0, 0, 0, minTh, maxTh, perPallet);
+      await window.dbOps.updateBlockType(id, name, 0, 0, 0, minTh, maxTh, perPallet, initStock);
       showAlert(`"${name}" blok tipinin özellikleri başarıyla güncellendi!`, "success");
       blockModal.classList.remove("active");
       await refreshApplicationData();

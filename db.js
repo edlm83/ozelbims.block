@@ -203,33 +203,49 @@ const deleteBlockType = async (id) => {
   }
 };
 
-const updateBlockType = async (id, name, length, width, height, minThreshold, maxThreshold, blocksPerPallet) => {
+const updateBlockType = async (id, name, length, width, height, minThreshold, maxThreshold, blocksPerPallet, initialStock) => {
   minThreshold = Number(minThreshold || 10);
   maxThreshold = Number(maxThreshold || 100);
   blocksPerPallet = Number(blocksPerPallet || 120);
+  initialStock = Number(initialStock || 0);
 
   if (window.isDemoMode) {
     const blocks = JSON.parse(localStorage.getItem("blocks_db")) || [];
     const blockIndex = blocks.findIndex(b => b.id === id);
     if (blockIndex === -1) throw new Error("نوع البلوك غير موجود!");
     
+    const oldInitial = blocks[blockIndex].initial_stock || 0;
+    const diff = initialStock - oldInitial;
+    
     blocks[blockIndex].name = name;
     blocks[blockIndex].dimensions = { length: Number(length), width: Number(width), height: Number(height) };
     blocks[blockIndex].min_threshold = minThreshold;
     blocks[blockIndex].max_threshold = maxThreshold;
     blocks[blockIndex].blocks_per_pallet = blocksPerPallet;
+    blocks[blockIndex].initial_stock = initialStock;
+    blocks[blockIndex].current_stock = (blocks[blockIndex].current_stock || 0) + diff;
     
     localStorage.setItem("blocks_db", JSON.stringify(blocks));
     await updateLastDbUpdateTimestamp();
     return blocks[blockIndex];
   } else {
     const blockRef = window.db.collection("block_types").doc(id);
+    const blockDoc = await blockRef.get();
+    if (!blockDoc.exists) throw new Error("نوع البلوك غير موجود!");
+    
+    const blockData = blockDoc.data();
+    const oldInitial = blockData.initial_stock || 0;
+    const diff = initialStock - oldInitial;
+    const updatedCurrent = (blockData.current_stock || 0) + diff;
+
     const updatedData = {
       name,
       dimensions: { length: Number(length), width: Number(width), height: Number(height) },
       min_threshold: minThreshold,
       max_threshold: maxThreshold,
-      blocks_per_pallet: blocksPerPallet
+      blocks_per_pallet: blocksPerPallet,
+      initial_stock: initialStock,
+      current_stock: updatedCurrent
     };
     await blockRef.update(updatedData);
     await updateLastDbUpdateTimestamp();
@@ -654,21 +670,51 @@ const getAnalyticsData = async () => {
     distribution: {
       labels: distributionLabels,
       datasets: [{
-        label: "عدد البلوكات",
+        label: "Palet Miktarı",
         data: distributionData,
         backgroundColor: [
-          "rgba(249, 115, 22, 0.65)",
-          "rgba(59, 130, 246, 0.65)",
-          "rgba(34, 197, 94, 0.65)",
-          "rgba(234, 179, 8, 0.65)",
-          "rgba(168, 85, 247, 0.65)"
+          "rgba(249, 115, 22, 0.65)",  /* Orange */
+          "rgba(59, 130, 246, 0.65)",  /* Blue */
+          "rgba(34, 197, 94, 0.65)",   /* Green */
+          "rgba(234, 179, 8, 0.65)",   /* Gold/Yellow */
+          "rgba(168, 85, 247, 0.65)",  /* Purple */
+          "rgba(6, 182, 212, 0.65)",   /* Teal/Cyan */
+          "rgba(244, 63, 94, 0.65)",   /* Pink/Rose */
+          "rgba(16, 185, 129, 0.65)",  /* Emerald */
+          "rgba(99, 102, 241, 0.65)",  /* Indigo */
+          "rgba(139, 92, 246, 0.65)",  /* Violet */
+          "rgba(217, 70, 239, 0.65)",  /* Fuchsia */
+          "rgba(14, 165, 233, 0.65)",  /* Sky Blue */
+          "rgba(239, 68, 68, 0.65)",   /* Crimson Red */
+          "rgba(132, 204, 22, 0.65)",  /* Lime */
+          "rgba(245, 158, 11, 0.65)",  /* Amber */
+          "rgba(20, 184, 166, 0.65)",  /* Turquoise */
+          "rgba(148, 163, 184, 0.65)", /* Slate/Silver */
+          "rgba(251, 146, 60, 0.65)",  /* Coral/Peach */
+          "rgba(236, 72, 153, 0.65)",  /* Hot Pink */
+          "rgba(21, 128, 61, 0.65)"    /* Forest Green */
         ],
         borderColor: [
           "hsl(20, 95%, 55%)",
           "hsl(210, 100%, 56%)",
           "hsl(142, 76%, 45%)",
           "hsl(45, 100%, 51%)",
-          "hsl(270, 84%, 60%)"
+          "hsl(270, 84%, 60%)",
+          "hsl(188, 86%, 43%)",
+          "hsl(348, 89%, 60%)",
+          "hsl(159, 84%, 39%)",
+          "hsl(239, 84%, 67%)",
+          "hsl(259, 84%, 66%)",
+          "hsl(292, 84%, 61%)",
+          "hsl(199, 89%, 48%)",
+          "hsl(0, 84%, 60%)",
+          "hsl(84, 81%, 44%)",
+          "hsl(38, 92%, 50%)",
+          "hsl(172, 66%, 40%)",
+          "hsl(215, 16%, 65%)",
+          "hsl(27, 96%, 61%)",
+          "hsl(329, 86%, 61%)",
+          "hsl(142, 72%, 29%)"
         ],
         borderWidth: 1
       }]
