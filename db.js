@@ -23,7 +23,7 @@ const INITIAL_TRANSACTIONS = [
 
 // Helper to initialize local storage databases
 const initLocalStorageDB = () => {
-  const currentVersion = "v3";
+  const currentVersion = "v4";
   const existingVersion = localStorage.getItem("blocks_db_version");
   
   if (existingVersion !== currentVersion) {
