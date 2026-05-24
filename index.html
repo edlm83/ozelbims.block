@@ -22,6 +22,20 @@
 </head>
 <body>
 
+  <!-- Print-Only Header Block (Visible only on page print) -->
+  <div id="print-header" class="print-only">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px double var(--glass-border); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+      <div>
+        <h1 style="margin: 0; font-size: 1.8rem; color: #000; font-weight: 800; letter-spacing: -0.03em;">ÖZEL BİMS - STOK TAKİP</h1>
+        <p style="margin: 0.25rem 0 0 0; font-size: 0.95rem; color: #555; font-weight: bold;">Aylık Envanter & Stok Analiz Raporu</p>
+      </div>
+      <div style="text-align: right;">
+        <div id="print-report-period" style="font-size: 1.15rem; font-weight: 800; color: hsl(358, 90%, 52%);">Dönem: Yükleniyor...</div>
+        <div id="print-report-date" style="font-size: 0.85rem; color: #666; margin-top: 0.2rem;">Yazdırma Tarihi: Yükleniyor...</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Alert Banner for Feedback Notification -->
   <div id="alert-container" style="position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 10000; width: 90%; max-width: 500px; display: none;">
     <div id="alert-banner" class="alert-banner alert-success">
@@ -38,14 +52,14 @@
         <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); border-left: 2px solid var(--glass-border); padding-left: 0.75rem; margin-left: 0.25rem;">Stok Takip Portalı</span>
       </div>
       <div class="user-badge" style="display: flex; align-items: center; gap: 0.75rem;">
+        <button id="btn-theme-toggle" class="btn-theme" title="Tema Değiştir">
+          <i class="fas fa-sun" id="theme-toggle-icon"></i>
+        </button>
         <!-- Network Status Indicator -->
         <div id="network-status" class="network-status-badge">
           <span class="network-dot online-dot"></span>
           <span id="network-text" class="network-text">Bağlı ve Hazır</span>
         </div>
-        <button id="btn-theme-toggle" class="btn-theme" title="Tema Değiştir">
-          <i class="fas fa-sun" id="theme-toggle-icon"></i>
-        </button>
         <span id="header-user-role" class="badge-role badge-owner">İzleyici Modu</span>
         <button id="btn-admin-login" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.35rem;">
           <i class="fas fa-key"></i> Yönetici Girişi
@@ -72,7 +86,7 @@
           <i class="fas fa-truck-loading"></i> Sevkiyat & Yükleme Fişleri
         </button>
         <button class="tab-btn hidden" data-target="admin-portal" id="tab-admin-portal">
-          <i class="fas fa-cogs"></i> Blok Tipi Yönetimi
+          <i class="fas fa-cogs"></i> Yönetici Ayarları & Yedekleme
         </button>
       </nav>
 
@@ -92,6 +106,46 @@
             <i class="fas fa-history" style="color: var(--primary); font-size: 0.75rem;"></i>
             <span style="color: var(--text-secondary);">Son Güncelleme Zamanı:</span>
             <span id="last-data-update-time" style="font-weight: bold; color: var(--text-primary);">Kontrol Ediliyor...</span>
+          </div>
+        </div>
+
+        <!-- Archive & Report Control Bar (Premium Glassmorphic Design) -->
+        <div class="glass-card" style="padding: 0.75rem 1.25rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; border-color: hsla(210, 100%, 56%, 0.15);">
+          <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            <span style="font-size: 0.9rem; font-weight: bold; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 0.35rem;">
+              <i class="fas fa-archive" style="color: var(--accent-blue);"></i> Arşiv Raporlama Dönemi:
+            </span>
+            <select id="archive-month-select" class="form-input" style="width: 130px; padding: 0.35rem 0.65rem; font-size: 0.85rem; margin-bottom: 0;">
+              <option value="0">Ocak</option>
+              <option value="1">Şubat</option>
+              <option value="2">Mart</option>
+              <option value="3">Nisan</option>
+              <option value="4">Mayıs</option>
+              <option value="5">Haziran</option>
+              <option value="6">Temmuz</option>
+              <option value="7">Ağustos</option>
+              <option value="8">Eylül</option>
+              <option value="9">Ekim</option>
+              <option value="10">Kasım</option>
+              <option value="11">Aralık</option>
+            </select>
+            <select id="archive-year-select" class="form-input" style="width: 95px; padding: 0.35rem 0.65rem; font-size: 0.85rem; margin-bottom: 0;">
+              <option value="2025">2025</option>
+              <option value="2026" selected>2026</option>
+              <option value="2027">2027</option>
+              <option value="2028">2028</option>
+            </select>
+            
+            <!-- Return to Current Month Button -->
+            <button id="btn-return-current" class="btn btn-secondary hidden" style="width: auto; padding: 0.35rem 0.75rem; font-size: 0.8rem; border-color: var(--primary); color: var(--primary); margin-bottom: 0; display: inline-flex; align-items: center; gap: 0.35rem; transition: var(--transition-smooth);">
+              <i class="fas fa-undo"></i> Şu Anki Aya Dön
+            </button>
+          </div>
+          
+          <div>
+            <button id="btn-export-pdf" class="btn btn-primary" style="width: auto; padding: 0.45rem 1rem; font-size: 0.85rem; margin-bottom: 0; display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, var(--accent-blue), hsl(210, 100%, 40%)); box-shadow: 0 0 15px hsla(210, 100%, 56%, 0.2);">
+              <i class="fas fa-file-pdf"></i> PDF Raporu İndir
+            </button>
           </div>
         </div>
 
@@ -427,6 +481,29 @@
           </div>
 
         </div>
+
+        <!-- Backup & Recovery Card (Stretches full width) -->
+        <div class="glass-card" style="border-color: hsla(210, 100%, 56%, 0.2); margin-top: 1.5rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h3 style="display: flex; align-items: center; gap: 0.5rem; color: var(--accent-blue); margin-bottom: 0.25rem;"><i class="fas fa-database"></i> Güvenli Veri Yedekleme & Geri Yükleme Paneli</h3>
+              <p style="font-size: 0.85rem; margin-bottom: 0;">Sistem verilerinizin (blok tipleri ve tüm hareket geçmişi) yedeğini alabilir veya bilgisayarınızdan yedeği geri yükleyebilirsiniz.</p>
+            </div>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+              <!-- Export Button -->
+              <button type="button" class="btn btn-secondary" id="btn-export-backup" style="width: auto; padding: 0.6rem 1.25rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem; border-color: hsla(142, 76%, 45%, 0.3); color: var(--success); margin-bottom: 0;">
+                <i class="fas fa-download"></i> Cihaza Yedek İndir (.JSON)
+              </button>
+              
+              <!-- Import Wrapper -->
+              <label class="btn btn-secondary" style="width: auto; padding: 0.6rem 1.25rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem; border-color: hsla(45, 100%, 51%, 0.3); color: var(--warning); margin-bottom: 0; cursor: pointer;">
+                <i class="fas fa-upload"></i> Yedekten Verileri Yükle
+                <input type="file" id="input-import-backup" accept=".json" style="display: none;">
+              </label>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </section>

@@ -6,13 +6,17 @@
 */
 
 // --- CONFIGURATION ---
-const ADMIN_PASSWORD = "1234"; // default manager password to unlock actions
+const ADMIN_PASSWORD = "56402"; // default manager password to unlock actions
 
 // --- STATE MANAGEMENT ---
 let currentUser = null;
 let blockTypesList = [];
 let monthlyChartInstance = null;
 let distributionChartInstance = null;
+let unsubscribeBlocks = null;
+let unsubscribeTransactions = null;
+let selectedReportMonth = new Date().getMonth();
+let selectedReportYear = new Date().getFullYear();
 
 // --- CORE SYSTEM INITIALIZATION ---
 document.addEventListener("DOMContentLoaded", () => {
@@ -101,8 +105,8 @@ const onLoginSuccess = async () => {
   // Handle Navigation Toggles based on current permissions
   enforceRolePermissions();
   
-  // Load core datasets
-  await refreshApplicationData();
+  // Initialize Real-Time Sync subscriptions (handles loading data instantly & pushes changes)
+  initRealTimeSync();
 };
 
 const enforceRolePermissions = () => {
@@ -186,9 +190,120 @@ const showConfirm = (message, callback) => {
 };
 
 // --- DATA MANAGEMENT ENGINE ---
+const handleStorageChange = async (e) => {
+  if (e.key === "blocks_db" || e.key === "transactions_db" || e.key === "last_db_update") {
+    await refreshApplicationData();
+  }
+};
+
+const initRealTimeSync = () => {
+  // Clear any existing subscriptions first to prevent duplicate bindings
+  if (unsubscribeBlocks) unsubscribeBlocks();
+  if (unsubscribeTransactions) unsubscribeTransactions();
+  window.removeEventListener("storage", handleStorageChange);
+
+  const syncIcon = document.getElementById("sync-icon");
+
+  if (window.isDemoMode) {
+    // 1. Demo Mode (LocalStorage Sandbox): Sync in real-time across multiple open browser tabs!
+    window.addEventListener("storage", handleStorageChange);
+    // Initial fetch to render UI
+    refreshApplicationData();
+    return;
+  }
+
+  // 2. Live Cloud Mode (Firebase Firestore): True real-time WebSocket-like data streaming!
+  if (syncIcon) syncIcon.classList.add("fa-spin");
+
+  // Subscribe to real-time Block Types
+  unsubscribeBlocks = window.dbOps.subscribeToBlockTypes(
+    async (blocks) => {
+      blockTypesList = blocks;
+      populateBlockSelects();
+      await renderStatsAndDashboard();
+      updateSyncTimeBadges();
+      
+      if (syncIcon) {
+        setTimeout(() => syncIcon.classList.remove("fa-spin"), 600);
+      }
+    },
+    (err) => {
+      showAlert("Bulut bağlantı aboneliğinde hata: " + err.message, "error");
+      if (syncIcon) syncIcon.classList.remove("fa-spin");
+    }
+  );
+
+  // Subscribe to real-time Transactions
+  unsubscribeTransactions = window.dbOps.subscribeToTransactions(
+    async (transactions) => {
+      await renderStatsAndDashboard();
+      updateSyncTimeBadges();
+      
+      if (syncIcon) {
+        setTimeout(() => syncIcon.classList.remove("fa-spin"), 600);
+      }
+    },
+    (err) => {
+      console.warn("Transactions real-time subscription error:", err.message);
+    }
+  );
+};
+
+const updateSyncTimeBadges = async () => {
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, "0");
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const year = now.getFullYear();
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const seconds = String(now.getSeconds()).padStart(2, "0");
+  const syncTimeStr = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  
+  const lastSyncEl = document.getElementById("last-sync-time");
+  if (lastSyncEl) {
+    lastSyncEl.textContent = syncTimeStr;
+  }
+
+  // Update Last Data Entry Status (Read from local cache timestamp to save API reads)
+  let lastUpdateTs = null;
+  if (window.isDemoMode) {
+    const val = localStorage.getItem("last_db_update");
+    lastUpdateTs = val ? Number(val) : null;
+  } else {
+    const cachedTs = localStorage.getItem("last_db_update");
+    lastUpdateTs = cachedTs ? Number(cachedTs) : null;
+  }
+  
+  const txs = await window.dbOps.getTransactions(true); // use cached array
+  if (!lastUpdateTs && txs.length > 0) {
+    lastUpdateTs = txs[0].date;
+  }
+  
+  let lastDataUpdateStr = "Kayıtlı işlem bulunamadı";
+  if (lastUpdateTs) {
+    const dateObj = new Date(lastUpdateTs);
+    const dDay = String(dateObj.getDate()).padStart(2, "0");
+    const dMonth = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const dYear = dateObj.getFullYear();
+    const dHours = String(dateObj.getHours()).padStart(2, "0");
+    const dMinutes = String(dateObj.getMinutes()).padStart(2, "0");
+    const dSeconds = String(dateObj.getSeconds()).padStart(2, "0");
+    lastDataUpdateStr = `${dDay}/${dMonth}/${dYear} ${dHours}:${dMinutes}:${dSeconds}`;
+  }
+  
+  const lastDataUpdateEl = document.getElementById("last-data-update-time");
+  if (lastDataUpdateEl) {
+    lastDataUpdateEl.textContent = lastDataUpdateStr;
+  }
+};
+
 const refreshApplicationData = async () => {
   try {
-    blockTypesList = await window.dbOps.getBlockTypes();
+    // In real-time mode, blockTypesList is kept up to date by subscribeToBlockTypes.
+    // We only fetch explicitly if in Demo mode or during manual fallback when empty.
+    if (window.isDemoMode || blockTypesList.length === 0) {
+      blockTypesList = await window.dbOps.getBlockTypes(false); // get fresh data (bypass cache)
+    }
     
     // Populate Select Options inside forms
     populateBlockSelects();
@@ -196,46 +311,8 @@ const refreshApplicationData = async () => {
     // Refresh Sub-Views based on what is active
     await renderStatsAndDashboard();
 
-    // Update Connection & Sync Status (Current browser time)
-    const now = new Date();
-    const day = String(now.getDate()).padStart(2, "0");
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const year = now.getFullYear();
-    const hours = String(now.getHours()).padStart(2, "0");
-    const minutes = String(now.getMinutes()).padStart(2, "0");
-    const seconds = String(now.getSeconds()).padStart(2, "0");
-    const syncTimeStr = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-    
-    const lastSyncEl = document.getElementById("last-sync-time");
-    if (lastSyncEl) {
-      lastSyncEl.textContent = syncTimeStr;
-    }
-
-    // Update Last Data Entry Status (Accurate last database modification timestamp)
-    let lastUpdateTs = await window.dbOps.getLastUpdateTimestamp();
-    const txs = await window.dbOps.getTransactions();
-    
-    // Fallback to latest transaction if no explicit modification has been tracked yet
-    if (!lastUpdateTs && txs.length > 0) {
-      lastUpdateTs = txs[0].date;
-    }
-    
-    let lastDataUpdateStr = "Kayıtlı işlem bulunamadı";
-    if (lastUpdateTs) {
-      const dateObj = new Date(lastUpdateTs);
-      const dDay = String(dateObj.getDate()).padStart(2, "0");
-      const dMonth = String(dateObj.getMonth() + 1).padStart(2, "0");
-      const dYear = dateObj.getFullYear();
-      const dHours = String(dateObj.getHours()).padStart(2, "0");
-      const dMinutes = String(dateObj.getMinutes()).padStart(2, "0");
-      const dSeconds = String(dateObj.getSeconds()).padStart(2, "0");
-      lastDataUpdateStr = `${dDay}/${dMonth}/${dYear} ${dHours}:${dMinutes}:${dSeconds}`;
-    }
-    
-    const lastDataUpdateEl = document.getElementById("last-data-update-time");
-    if (lastDataUpdateEl) {
-      lastDataUpdateEl.textContent = lastDataUpdateStr;
-    }
+    // Update time badges
+    await updateSyncTimeBadges();
   } catch (error) {
     showAlert("Veriler yüklenirken hata oluştu: " + error.message, "error");
   }
@@ -280,21 +357,29 @@ const renderStatsAndDashboard = async () => {
   const viewId = activeTab.getAttribute("data-target");
 
   if (viewId === "owner-dashboard") {
-    const stats = await window.dbOps.getStats();
+    const stats = await window.dbOps.getStats(selectedReportMonth, selectedReportYear);
     document.getElementById("stat-total-stock").textContent = stats.totalStock.toLocaleString("tr-TR");
     document.getElementById("stat-month-production").textContent = stats.monthProduction.toLocaleString("tr-TR");
     document.getElementById("stat-month-dispatch").textContent = stats.monthDispatch.toLocaleString("tr-TR");
     document.getElementById("stat-total-repair").textContent = stats.totalUnderRepair.toLocaleString("tr-TR");
 
+    // Dynamically update the stats card labels to match the selected period
+    const monthsTr = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+    const periodLabel = `${monthsTr[selectedReportMonth]} ${selectedReportYear}`;
+    
+    const prodCardText = document.getElementById("stat-month-production").nextElementSibling;
+    const dispCardText = document.getElementById("stat-month-dispatch").nextElementSibling;
+    if (prodCardText) prodCardText.textContent = `${periodLabel} Toplam Üretim (Palet)`;
+    if (dispCardText) dispCardText.textContent = `${periodLabel} Toplam Sevkiyat (Palet)`;
+
     renderInventoryTable();
     renderDashboardLogs();
-    renderDashboardCharts();
+    renderDashboardCharts(selectedReportMonth, selectedReportYear);
   } 
   
   else if (viewId === "production-portal" || viewId === "dispatch-portal") {
     renderPortalLogs(viewId);
   }
-  
   else if (viewId === "admin-portal") {
     renderAdminBlockList();
   }
@@ -681,8 +766,8 @@ const renderAdminBlockList = () => {
   });
 };
 
-const renderDashboardCharts = async () => {
-  const data = await window.dbOps.getAnalyticsData();
+const renderDashboardCharts = async (targetMonth = null, targetYear = null) => {
+  const data = await window.dbOps.getAnalyticsData(targetMonth, targetYear);
 
   if (monthlyChartInstance) monthlyChartInstance.destroy();
   if (distributionChartInstance) distributionChartInstance.destroy();
@@ -1137,6 +1222,117 @@ const setupEventListeners = () => {
     }
   });
 
+  // 5. Data Backup Export Handler
+  document.getElementById("btn-export-backup").addEventListener("click", async () => {
+    try {
+      const backupData = await window.dbOps.exportData();
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+      const downloadAnchor = document.createElement("a");
+      downloadAnchor.setAttribute("href", dataStr);
+      
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+      downloadAnchor.setAttribute("download", `OzelBims_Stok_Yedek_${dateStr}.json`);
+      
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      
+      showAlert("Veri tabanı yedeği başarıyla oluşturuldu ve indirildi!", "success");
+    } catch (err) {
+      showAlert("Yedek oluşturulurken hata: " + err.message, "error");
+    }
+  });
+
+  // 6. Data Backup Import/Restore Handler
+  document.getElementById("input-import-backup").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    showConfirm("⚠️ <strong>DİKKAT!</strong> Bu yedeği geri yüklemek, şu anki tüm envanter verilerinizi ve geçmiş işlem kayıtlarınızı tamamen silecektir! Devam etmek istediğinizden emin misiniz?", async () => {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const backupObj = JSON.parse(event.target.result);
+          const syncIcon = document.getElementById("sync-icon");
+          if (syncIcon) syncIcon.classList.add("fa-spin");
+          
+          await window.dbOps.importData(backupObj);
+          showAlert("Yedek başarıyla geri yüklendi, tüm veriler ve kayıtlar güncellendi!", "success");
+          await refreshApplicationData();
+        } catch (err) {
+          showAlert("Yedek yükleme başarısız: " + err.message, "error");
+        } finally {
+          // Reset file input value so same file can be uploaded again
+          e.target.value = "";
+        }
+      };
+      reader.readAsText(file);
+    });
+  });
+
+  // 7. Initialize default report selectors values
+  const monthSelect = document.getElementById("archive-month-select");
+  const yearSelect = document.getElementById("archive-year-select");
+  if (monthSelect && yearSelect) {
+    monthSelect.value = selectedReportMonth;
+    yearSelect.value = selectedReportYear;
+
+    const handleArchivePeriodChange = async () => {
+      selectedReportMonth = Number(monthSelect.value);
+      selectedReportYear = Number(yearSelect.value);
+
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+
+      const btnReturn = document.getElementById("btn-return-current");
+      if (selectedReportMonth !== currentMonth || selectedReportYear !== currentYear) {
+        btnReturn.classList.remove("hidden");
+      } else {
+        btnReturn.classList.add("hidden");
+      }
+
+      await renderStatsAndDashboard();
+    };
+
+    monthSelect.addEventListener("change", handleArchivePeriodChange);
+    yearSelect.addEventListener("change", handleArchivePeriodChange);
+  }
+
+  // 8. Return to current month button
+  const btnReturn = document.getElementById("btn-return-current");
+  if (btnReturn) {
+    btnReturn.addEventListener("click", async () => {
+      const now = new Date();
+      selectedReportMonth = now.getMonth();
+      selectedReportYear = now.getFullYear();
+
+      if (monthSelect) monthSelect.value = selectedReportMonth;
+      if (yearSelect) yearSelect.value = selectedReportYear;
+      btnReturn.classList.add("hidden");
+
+      await renderStatsAndDashboard();
+    });
+  }
+
+  // 9. PDF Report Generation Click Handler (Professional Browser-Native High-Fidelity Printing)
+  const btnPdf = document.getElementById("btn-export-pdf");
+  if (btnPdf) {
+    btnPdf.addEventListener("click", () => {
+      const monthsTr = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+      const periodStr = `${monthsTr[selectedReportMonth]} ${selectedReportYear}`;
+      
+      document.getElementById("print-report-period").textContent = `Dönem: ${periodStr}`;
+      
+      const now = new Date();
+      const dStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth()+1).padStart(2, "0")}/${now.getFullYear()} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+      document.getElementById("print-report-date").textContent = `Yazdırma Tarihi: ${dStr}`;
+
+      window.print();
+    });
+  }
+
 };
 
 // --- AUTOMATIC & MANUAL BACKGROUND SYNC SYSTEM ---
@@ -1149,13 +1345,19 @@ const initAutoSync = () => {
       if (syncIcon) syncIcon.classList.add("fa-spin");
       
       try {
-        await refreshApplicationData();
+        if (!window.isDemoMode) {
+          // Re-subscribe or trigger a manual fetch from Firestore to verify connection
+          await window.dbOps.getBlockTypes(false);
+          await window.dbOps.getTransactions(false);
+          initRealTimeSync(); 
+        } else {
+          await refreshApplicationData();
+        }
         showAlert("Veriler başarıyla senkronize edildi ve envanter güncellendi!", "success");
       } catch (err) {
         showAlert("Senkronizasyon hatası: " + err.message, "error");
       } finally {
         if (syncIcon) {
-          // Keep spinning for 600ms for visual satisfaction
           setTimeout(() => {
             syncIcon.classList.remove("fa-spin");
           }, 600);
@@ -1164,21 +1366,8 @@ const initAutoSync = () => {
     });
   }
 
-  // 2. Automatic periodic background sync every 60 seconds
-  setInterval(async () => {
-    const syncIcon = document.getElementById("sync-icon");
-    if (syncIcon) syncIcon.classList.add("fa-spin");
-    
-    try {
-      await refreshApplicationData();
-    } catch (err) {
-      console.warn("Background auto-sync failed:", err.message);
-    } finally {
-      if (syncIcon) {
-        setTimeout(() => {
-          syncIcon.classList.remove("fa-spin");
-        }, 600);
-      }
-    }
-  }, 60000);
+  // 2. Periodic loop to update network online/offline indicator dot (runs every 10 seconds)
+  setInterval(() => {
+    updateNetworkStatus();
+  }, 10000);
 };

@@ -4,6 +4,12 @@
    Exposes core database functions, including reverse stock math for deletes/edits.
 */
 
+// --- REAL-TIME IN-MEMORY QUERY CACHE ---
+let cachedBlockTypes = [];
+let cachedTransactions = [];
+let unsubscribeBlocksListener = null;
+let unsubscribeTransactionsListener = null;
+
 // --- SEED DATA FOR DEMO MODE (LocalStorage Sandbox) ---
 const INITIAL_BLOCK_TYPES = [
   { id: "b1", name: "Boşluklu Bims 10", dimensions: { length: 40, width: 10, height: 20 }, initial_stock: 100, current_stock: 99, under_repair_stock: 0, min_threshold: 10, max_threshold: 80, blocks_per_pallet: 150, created_at: Date.now() - 100000000 },
@@ -100,10 +106,13 @@ const getLastUpdateTimestamp = async () => {
   }
 };
 
-const getBlockTypes = async () => {
+const getBlockTypes = async (useCache = true) => {
   if (window.isDemoMode) {
     return JSON.parse(localStorage.getItem("blocks_db")) || [];
   } else {
+    if (useCache && cachedBlockTypes.length > 0) {
+      return cachedBlockTypes;
+    }
     try {
       const getPromise = window.db.collection("block_types").orderBy("created_at", "asc").get();
       const snapshot = await promiseWithTimeout(
@@ -112,7 +121,8 @@ const getBlockTypes = async () => {
         "Google Firebase sunucularına bağlantı zaman aşımına uğradı (Lütfen Firestore sekmesinde 'Create Database' butonuna tıkladığınızdan ve kuralları Test Modu olarak aktif ettiğinizden emin olun)."
       );
       
-      let blocks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      cachedBlockTypes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      let blocks = cachedBlockTypes;
       
       if (blocks.length > 0) {
         localStorage.setItem("cloud_db_seeded", "true");
@@ -591,30 +601,41 @@ const editTransaction = async (txId, newBlockTypeId, newQuantity, newNotes) => {
   }
 };
 
-const getTransactions = async () => {
+const getTransactions = async (useCache = true) => {
   if (window.isDemoMode) {
     return JSON.parse(localStorage.getItem("transactions_db")) || [];
   } else {
+    if (useCache && cachedTransactions.length > 0) {
+      return cachedTransactions;
+    }
     const snapshot = await window.db.collection("transactions").orderBy("date", "desc").get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    cachedTransactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return cachedTransactions;
   }
 };
 
-const getStats = async () => {
+const getStats = async (targetMonth = null, targetYear = null) => {
   const blocks = await getBlockTypes();
   const txs = await getTransactions();
 
   const totalStock = blocks.reduce((acc, b) => acc + b.current_stock, 0);
   const totalUnderRepair = blocks.reduce((acc, b) => acc + b.under_repair_stock, 0);
 
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  let startTimestamp, endTimestamp;
+  if (targetMonth !== null && targetYear !== null) {
+    startTimestamp = new Date(targetYear, targetMonth, 1).getTime();
+    endTimestamp = new Date(targetYear, targetMonth + 1, 1).getTime();
+  } else {
+    const now = new Date();
+    startTimestamp = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    endTimestamp = now.getTime() + 86400000;
+  }
 
   let monthProduction = 0;
   let monthDispatch = 0;
 
   txs.forEach(t => {
-    if (t.date >= startOfMonth) {
+    if (t.date >= startTimestamp && t.date < endTimestamp) {
       if (t.type === "production") {
         monthProduction += t.quantity;
       } else if (t.type === "dispatch") {
@@ -631,7 +652,7 @@ const getStats = async () => {
   };
 };
 
-const getAnalyticsData = async () => {
+const getAnalyticsData = async (targetMonth = null, targetYear = null) => {
   const txs = await getTransactions();
   const blocks = await getBlockTypes();
 
@@ -639,32 +660,69 @@ const getAnalyticsData = async () => {
   const distributionLabels = blocks.map(b => b.name);
   const distributionData = blocks.map(b => b.current_stock);
 
-  // 2. Production vs Dispatch over 7 days
-  const last7Days = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    d.setHours(0, 0, 0, 0);
-    last7Days.push({
-      dateStr: `${d.getDate()}/${d.getMonth() + 1}`,
-      timestampStart: d.getTime(),
-      timestampEnd: d.getTime() + 86400000,
-      prod: 0,
-      disp: 0
+  // 2. Comparison (7 days by default, or entire month if specified)
+  const dataLabels = [];
+  const productionData = [];
+  const dispatchData = [];
+
+  if (targetMonth !== null && targetYear !== null) {
+    const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+    const daysArray = [];
+    for (let day = 1; day <= daysInMonth; day++) {
+      const d = new Date(targetYear, targetMonth, day);
+      daysArray.push({
+        dateStr: `${day}/${targetMonth + 1}`,
+        timestampStart: d.getTime(),
+        timestampEnd: d.getTime() + 86400000,
+        prod: 0,
+        disp: 0
+      });
+    }
+
+    txs.forEach(t => {
+      daysArray.forEach(day => {
+        if (t.date >= day.timestampStart && t.date < day.timestampEnd) {
+          if (t.type === "production") day.prod += t.quantity;
+          else if (t.type === "dispatch") day.disp += t.quantity;
+        }
+      });
+    });
+
+    daysArray.forEach(day => {
+      dataLabels.push(day.dateStr);
+      productionData.push(day.prod);
+      dispatchData.push(day.disp);
+    });
+  } else {
+    const last7Days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      last7Days.push({
+        dateStr: `${d.getDate()}/${d.getMonth() + 1}`,
+        timestampStart: d.getTime(),
+        timestampEnd: d.getTime() + 86400000,
+        prod: 0,
+        disp: 0
+      });
+    }
+
+    txs.forEach(t => {
+      last7Days.forEach(day => {
+        if (t.date >= day.timestampStart && t.date < day.timestampEnd) {
+          if (t.type === "production") day.prod += t.quantity;
+          else if (t.type === "dispatch") day.disp += t.quantity;
+        }
+      });
+    });
+
+    last7Days.forEach(day => {
+      dataLabels.push(day.dateStr);
+      productionData.push(day.prod);
+      dispatchData.push(day.disp);
     });
   }
-
-  txs.forEach(t => {
-    last7Days.forEach(day => {
-      if (t.date >= day.timestampStart && t.date < day.timestampEnd) {
-        if (t.type === "production") {
-          day.prod += t.quantity;
-        } else if (t.type === "dispatch") {
-          day.disp += t.quantity;
-        }
-      }
-    });
-  });
 
   return {
     distribution: {
@@ -720,11 +778,110 @@ const getAnalyticsData = async () => {
       }]
     },
     weeklyComparison: {
-      labels: last7Days.map(d => d.dateStr),
-      production: last7Days.map(d => d.prod),
-      dispatch: last7Days.map(d => d.disp)
+      labels: dataLabels,
+      production: productionData,
+      dispatch: dispatchData
     }
   };
+};
+
+// --- DATA BACKUP & RESTORE OPERATIONS ---
+const exportData = async () => {
+  const blocks = await getBlockTypes();
+  const txs = await getTransactions();
+  return {
+    blocks,
+    transactions: txs,
+    exported_at: Date.now(),
+    app: "Ozel Bims Stok Takip"
+  };
+};
+
+const importData = async (backup) => {
+  if (!backup || !Array.isArray(backup.blocks) || !Array.isArray(backup.transactions)) {
+    throw new Error("Geçersiz yedek dosyası formatı!");
+  }
+
+  if (window.isDemoMode) {
+    localStorage.setItem("blocks_db", JSON.stringify(backup.blocks));
+    localStorage.setItem("transactions_db", JSON.stringify(backup.transactions));
+    await updateLastDbUpdateTimestamp();
+    return true;
+  } else {
+    // Cloud Mode: Safe transactional upload to Firestore
+    // 1. Delete all current blocks and transactions from Firestore
+    const oldBlocks = await getBlockTypes();
+    for (const b of oldBlocks) {
+      await window.db.collection("block_types").doc(b.id).delete();
+    }
+    const oldTxs = await getTransactions();
+    for (const t of oldTxs) {
+      await window.db.collection("transactions").doc(t.id).delete();
+    }
+    
+    // 2. Upload restored blocks to Firestore and map old IDs to new Firestore document IDs
+    const idMap = {};
+    for (const b of backup.blocks) {
+      const { id, ...data } = b;
+      const docRef = await window.db.collection("block_types").add(data);
+      idMap[id] = docRef.id;
+    }
+    
+    // 3. Upload restored transactions to Firestore with correctly mapped block IDs
+    for (const t of backup.transactions) {
+      const { id, ...data } = t;
+      if (idMap[data.block_type_id]) {
+        data.block_type_id = idMap[data.block_type_id];
+      }
+      await window.db.collection("transactions").add(data);
+    }
+    await updateLastDbUpdateTimestamp();
+    return true;
+  }
+};
+
+// --- REAL-TIME LISTENER SUBSCRIPTIONS ---
+const subscribeToBlockTypes = (onUpdate, onError) => {
+  if (window.isDemoMode) {
+    // Demo Mode: call immediately with local storage values
+    getBlockTypes().then(onUpdate).catch(onError);
+    return () => {};
+  }
+
+  if (unsubscribeBlocksListener) unsubscribeBlocksListener();
+
+  unsubscribeBlocksListener = window.db.collection("block_types").orderBy("created_at", "asc").onSnapshot(
+    (snapshot) => {
+      cachedBlockTypes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      onUpdate(cachedBlockTypes);
+    },
+    (error) => {
+      if (onError) onError(error);
+    }
+  );
+
+  return unsubscribeBlocksListener;
+};
+
+const subscribeToTransactions = (onUpdate, onError) => {
+  if (window.isDemoMode) {
+    getTransactions().then(onUpdate).catch(onError);
+    return () => {};
+  }
+
+  if (unsubscribeTransactionsListener) unsubscribeTransactionsListener();
+
+  unsubscribeTransactionsListener = window.db.collection("transactions").orderBy("date", "desc").onSnapshot(
+    (snapshot) => {
+      cachedTransactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      onUpdate(cachedTransactions);
+    },
+    (error) => {
+      if (onError) onError(error);
+    }
+  );
+
+  return unsubscribeTransactionsListener;
 };
 
 // Export to window object
@@ -739,5 +896,9 @@ window.dbOps = {
   deleteTransaction,
   editTransaction,
   updateBlockType,
-  getLastUpdateTimestamp
+  getLastUpdateTimestamp,
+  exportData,
+  importData,
+  subscribeToBlockTypes,
+  subscribeToTransactions
 };

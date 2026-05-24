@@ -921,3 +921,118 @@ body.light-theme .update-badge {
   }
 }
 
+/* ==========================================================================
+   PRINT MEDIA STYLESHEET (PROFESSIONAL HIGHER-FIDELITY PDF REPORTS)
+   ========================================================================== */
+.print-only {
+  display: none !important;
+}
+
+@media print {
+  /* Reset background and layout for printer optimization */
+  body {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+  }
+  
+  .container {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Hide non-printable elements */
+  header,
+  #app-header,
+  .tab-navigation,
+  .update-badge,
+  .sync-badge,
+  .glass-card style,
+  div[style*="padding: 0.75rem 1.25rem; margin-bottom: 1.25rem;"], /* Hide Archive bar */
+  #archive-month-select,
+  #archive-year-select,
+  #btn-return-current,
+  #btn-export-pdf,
+  #btn-manual-sync,
+  .filter-bar,
+  #inventory-search,
+  .log-actions,
+  form,
+  .modal-overlay,
+  .fab,
+  button,
+  #view-app > div[style*="display: flex; justify-content: space-between;"],
+  #btn-theme-toggle,
+  #btn-admin-login {
+    display: none !important;
+  }
+  
+  /* Show custom print-only header */
+  .print-only {
+    display: block !important;
+  }
+  
+  /* Make all glass cards clean, borderless or thin borders, white backgrounds */
+  .glass-card {
+    background: #ffffff !important;
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+    padding: 1rem !important;
+    margin-bottom: 1.5rem !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Force charts to stay visible and print backgrounds */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Grid conversions for print layouts */
+  .grid-4, .grid-2 {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 1rem !important;
+  }
+  .stat-card {
+    flex: 1 !important;
+    background: #f8f9fa !important;
+    border: 1px solid #ccc !important;
+  }
+  
+  .stat-value {
+    font-size: 1.4rem !important;
+    color: #000000 !important;
+  }
+  
+  .stat-icon {
+    border: 1px solid #ccc !important;
+  }
+  
+  .table-wrapper {
+    border: 1px solid #333 !important;
+  }
+  
+  table {
+    width: 100% !important;
+  }
+  
+  th {
+    background-color: #f1f3f5 !important;
+    color: #000000 !important;
+    border-bottom: 2px solid #333 !important;
+  }
+  
+  td {
+    color: #000000 !important;
+    border-bottom: 1px solid #ddd !important;
+  }
+  
+  /* Charts spacing */
+  .chart-container {
+    height: 250px !important;
+  }
+}
+
