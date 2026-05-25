@@ -743,6 +743,7 @@ const renderAdminBlockList = () => {
       document.getElementById("edit-block-min-threshold").value = block.min_threshold || 10;
       document.getElementById("edit-block-max-threshold").value = block.max_threshold || 100;
       document.getElementById("edit-block-initial-stock").value = block.initial_stock || 0;
+      document.getElementById("edit-block-current-stock").value = block.current_stock || 0;
       document.getElementById("edit-block-per-pallet").value = block.blocks_per_pallet || 120;
 
       document.getElementById("edit-block-modal").classList.add("active");
@@ -1007,6 +1008,12 @@ const setupEventListeners = () => {
       return;
     }
 
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
+    }
+
     try {
       const stockAggregate = {};
       itemsToLoad.forEach(item => {
@@ -1032,6 +1039,11 @@ const setupEventListeners = () => {
       await refreshApplicationData();
     } catch (err) {
       showAlert("Yükleme kaydı başarısız: " + err.message, "error");
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-shipping-fast"></i> Sevkiyatı Tamamla ve Fişi Kaydet';
+      }
     }
   });
 
@@ -1084,6 +1096,12 @@ const setupEventListeners = () => {
       return;
     }
 
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
+    }
+
     try {
       await window.dbOps.addTransaction(typeId, "production", qty, notes, currentUser.name);
       showAlert("Üretim işlemi başarıyla kaydedildi ve stok artırıldı!", "success");
@@ -1091,6 +1109,11 @@ const setupEventListeners = () => {
       await refreshApplicationData();
     } catch (err) {
       showAlert("Hata: " + err.message, "error");
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-check"></i> Üretim İşlemini Kaydet';
+      }
     }
   });
 
@@ -1113,6 +1136,12 @@ const setupEventListeners = () => {
       return;
     }
 
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
+    }
+
     try {
       const locationPrefix = `[${location}]`;
       const fullNotes = notes ? `${locationPrefix} ${notes}` : `${locationPrefix} Hasar kaydı`;
@@ -1129,6 +1158,11 @@ const setupEventListeners = () => {
       await refreshApplicationData();
     } catch (err) {
       showAlert("Kaydetme esnasında hata: " + err.message, "error");
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Zayiat ve Hasar Kaydını Tamamla';
+      }
     }
   });
 
@@ -1162,6 +1196,12 @@ const setupEventListeners = () => {
       return;
     }
 
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
+    }
+
     try {
       await window.dbOps.addTransaction(typeId, "repaired", qty, "Onarılan bimslerin stoğa iadesi", currentUser.name);
       showAlert("Hasarlı bimslerin onarımı başarıyla onaylandı ve stoğa iade edildi!", "success");
@@ -1169,6 +1209,11 @@ const setupEventListeners = () => {
       await refreshApplicationData();
     } catch (err) {
       showAlert("Hata: " + err.message, "error");
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-tools"></i> Stoğa Dönüşü Onayla';
+      }
     }
   });
 
@@ -1181,6 +1226,12 @@ const setupEventListeners = () => {
     const maxTh = document.getElementById("block-max-threshold").value;
     const perPallet = document.getElementById("block-per-pallet").value;
 
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
+    }
+
     try {
       await window.dbOps.createBlockType(name, 0, 0, 0, initStock, minTh, maxTh, perPallet);
       showAlert(`"${name}" blok tipi başarıyla tanımlandı ve başlangıç stoğu kuruldu!`, "success");
@@ -1188,6 +1239,11 @@ const setupEventListeners = () => {
       await refreshApplicationData();
     } catch (err) {
       showAlert("Hata: " + err.message, "error");
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-plus"></i> Blok Tipini Tanımla ve Ekle';
+      }
     }
   });
 
@@ -1210,15 +1266,27 @@ const setupEventListeners = () => {
     const minTh = document.getElementById("edit-block-min-threshold").value;
     const maxTh = document.getElementById("edit-block-max-threshold").value;
     const initStock = document.getElementById("edit-block-initial-stock").value || 0;
+    const currentStock = document.getElementById("edit-block-current-stock").value || 0;
     const perPallet = document.getElementById("edit-block-per-pallet").value;
 
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
+    }
+
     try {
-      await window.dbOps.updateBlockType(id, name, 0, 0, 0, minTh, maxTh, perPallet, initStock);
+      await window.dbOps.updateBlockType(id, name, 0, 0, 0, minTh, maxTh, perPallet, initStock, currentStock);
       showAlert(`"${name}" blok tipinin özellikleri başarıyla güncellendi!`, "success");
       blockModal.classList.remove("active");
       await refreshApplicationData();
     } catch (err) {
       showAlert("Güncelleme esnasında hata: " + err.message, "error");
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> Değişiklikleri ve Özellikleri Kaydet';
+      }
     }
   });
 

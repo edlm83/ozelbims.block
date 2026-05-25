@@ -599,9 +599,13 @@
             <input class="form-input" type="number" min="0" id="edit-block-initial-stock" required>
           </div>
           <div class="form-group" style="margin-bottom: 0;">
-            <label class="form-label" for="edit-block-per-pallet">Palet Kapasitesi (Adet/Palet)</label>
-            <input class="form-input" type="number" min="1" id="edit-block-per-pallet" required>
+            <label class="form-label" for="edit-block-current-stock">Güncel Mevcut Stok (Palet)</label>
+            <input class="form-input" type="number" min="0" id="edit-block-current-stock" required>
           </div>
+        </div>
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label class="form-label" for="edit-block-per-pallet">Palet Kapasitesi (Adet/Palet)</label>
+          <input class="form-input" type="number" min="1" id="edit-block-per-pallet" required>
         </div>
         <button type="submit" class="btn btn-primary" id="btn-save-edit-block">
           <i class="fas fa-save"></i> Değişiklikleri ve Özellikleri Kaydet

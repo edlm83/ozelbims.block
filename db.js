@@ -187,7 +187,7 @@ const createBlockType = async (name, length, width, height, initialStock, minThr
 
   if (window.isDemoMode) {
     const blocks = JSON.parse(localStorage.getItem("blocks_db")) || [];
-    const blockWithId = { id: "b_" + Date.now(), ...newBlock };
+    const blockWithId = { id: "b_" + Date.now() + "_" + Math.random().toString(36).substring(2, 9), ...newBlock };
     blocks.push(blockWithId);
     localStorage.setItem("blocks_db", JSON.stringify(blocks));
     await updateLastDbUpdateTimestamp();
@@ -213,7 +213,7 @@ const deleteBlockType = async (id) => {
   }
 };
 
-const updateBlockType = async (id, name, length, width, height, minThreshold, maxThreshold, blocksPerPallet, initialStock) => {
+const updateBlockType = async (id, name, length, width, height, minThreshold, maxThreshold, blocksPerPallet, initialStock, currentStock = null) => {
   minThreshold = Number(minThreshold || 10);
   maxThreshold = Number(maxThreshold || 100);
   blocksPerPallet = Number(blocksPerPallet || 120);
@@ -224,16 +224,20 @@ const updateBlockType = async (id, name, length, width, height, minThreshold, ma
     const blockIndex = blocks.findIndex(b => b.id === id);
     if (blockIndex === -1) throw new Error("نوع البلوك غير موجود!");
     
-    const oldInitial = blocks[blockIndex].initial_stock || 0;
-    const diff = initialStock - oldInitial;
-    
     blocks[blockIndex].name = name;
     blocks[blockIndex].dimensions = { length: Number(length), width: Number(width), height: Number(height) };
     blocks[blockIndex].min_threshold = minThreshold;
     blocks[blockIndex].max_threshold = maxThreshold;
     blocks[blockIndex].blocks_per_pallet = blocksPerPallet;
     blocks[blockIndex].initial_stock = initialStock;
-    blocks[blockIndex].current_stock = (blocks[blockIndex].current_stock || 0) + diff;
+    
+    if (currentStock !== null) {
+      blocks[blockIndex].current_stock = Number(currentStock);
+    } else {
+      const oldInitial = blocks[blockIndex].initial_stock || 0;
+      const diff = initialStock - oldInitial;
+      blocks[blockIndex].current_stock = (blocks[blockIndex].current_stock || 0) + diff;
+    }
     
     localStorage.setItem("blocks_db", JSON.stringify(blocks));
     await updateLastDbUpdateTimestamp();
@@ -255,7 +259,7 @@ const updateBlockType = async (id, name, length, width, height, minThreshold, ma
       max_threshold: maxThreshold,
       blocks_per_pallet: blocksPerPallet,
       initial_stock: initialStock,
-      current_stock: updatedCurrent
+      current_stock: currentStock !== null ? Number(currentStock) : updatedCurrent
     };
     await blockRef.update(updatedData);
     await updateLastDbUpdateTimestamp();
@@ -308,7 +312,7 @@ const addTransaction = async (blockTypeId, type, quantity, notes, userName) => {
     // Save transaction
     const transactions = JSON.parse(localStorage.getItem("transactions_db")) || [];
     const newTx = {
-      id: "t_" + Date.now(),
+      id: "t_" + Date.now() + "_" + Math.random().toString(36).substring(2, 9),
       block_type_id: blockTypeId,
       block_name: blockName,
       type,
